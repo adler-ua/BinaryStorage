@@ -61,6 +61,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BinaryStorage.cs" />
+    <Compile Include="FileStorage\FileStreamStorage.cs" />
+    <Compile Include="FileStorage\IPersistentStreamStorage.cs" />
+    <Compile Include="FileStorage\StreamStorage.cs" />
     <Compile Include="IBinaryStorage.cs" />
     <Compile Include="Indexing\FileIndexStorage.cs" />
     <Compile Include="Indexing\IPersistentIndexStorage.cs" />
@@ -70,6 +73,7 @@
     <Compile Include="StorageConfiguration.cs" />
     <Compile Include="StreamInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

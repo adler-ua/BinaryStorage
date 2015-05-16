@@ -50,8 +50,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="BinaryStorageTests.cs" />
-    <Compile Include="FakePersistentStorage.cs" />
+    <Compile Include="FakePersistentStreamStorage.cs" />
+    <Compile Include="WhenNewFileAdded.cs" />
+    <Compile Include="FakePersistentIndexStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
 
 namespace Zylab.Interview.BinStorage {
@@ -10,7 +11,7 @@ namespace Zylab.Interview.BinStorage {
     {
         private readonly StorageConfiguration _configuration;
         private readonly IndexStorage _indexStorage;
-        private Dictionary<string, Stream> _fileStorage = new Dictionary<string, Stream>();
+        private readonly StreamStorage _streamStorage;
         
         public BinaryStorage(StorageConfiguration configuration)
         {
@@ -19,21 +20,24 @@ namespace Zylab.Interview.BinStorage {
             _indexStorage = new IndexStorage(persistentIndexStorage);
         }
 
-        public BinaryStorage(StorageConfiguration configuration, IndexStorage indexStorage)
+        public BinaryStorage(StorageConfiguration configuration, IndexStorage indexStorage, StreamStorage streamStorage)
         {
             _configuration = configuration;
             _indexStorage = indexStorage;
+            _streamStorage = streamStorage;
         }
 
-        public void Add(string key, Stream data, StreamInfo parameters) {
-            Index index = _indexStorage.Add(key, 0, 0, parameters);
-            _fileStorage[index.Key] = data;
+        public void Add(string key, Stream data, StreamInfo parameters)
+        {
+            long offset, size;
+            _streamStorage.SaveFile(data, parameters, out offset, out size);
+            Index index = _indexStorage.Add(key, offset, size, parameters);
         }
 
         public Stream Get(string key)
         {
             Index index = _indexStorage.Get(key);
-            return _fileStorage[index.Key];
+            return _streamStorage.RestoreFile(index.Offset, index.Size);
         }
 
         public bool Contains(string key)
@@ -43,7 +47,8 @@ namespace Zylab.Interview.BinStorage {
 
         public void Dispose()
         {
-            _fileStorage = null;
+            _indexStorage.Dispose();
+            _streamStorage.Dispose();
         }
     }
 }

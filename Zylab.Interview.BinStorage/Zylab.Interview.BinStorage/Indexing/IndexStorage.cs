@@ -17,7 +17,7 @@ namespace Zylab.Interview.BinStorage.Indexing
             _persistentStorage = persistentStorage;
         }
 
-        public Index Add(string key, int offset, int size, StreamInfo info)
+        public Index Add(string key, long offset, long size, StreamInfo info)
         {
             Index index = new Index(key, offset, size, info);
             _cache.Add(key, index);
@@ -38,6 +38,11 @@ namespace Zylab.Interview.BinStorage.Indexing
         public bool ContainsKey(string key)
         {
             return _cache.ContainsKey(key);
+        }
+
+        public void Dispose()
+        {
+            _persistentStorage.Dispose();
         }
     }
 

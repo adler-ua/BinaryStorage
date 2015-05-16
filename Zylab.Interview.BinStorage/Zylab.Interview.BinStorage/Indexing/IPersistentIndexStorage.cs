@@ -12,5 +12,6 @@ namespace Zylab.Interview.BinStorage.Indexing
         void Save(IEnumerable<Index> items);
 
         IEnumerable<Index> Restore();
+        void Dispose();
     }
 }

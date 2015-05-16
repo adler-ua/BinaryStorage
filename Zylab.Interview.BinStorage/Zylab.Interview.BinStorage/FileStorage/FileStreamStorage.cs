@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Zylab.Interview.BinStorage.Indexing
+namespace Zylab.Interview.BinStorage.FileStorage
 {
-    public class FileIndexStorage : IPersistentIndexStorage
+    public class FileStreamStorage : IPersistentStreamStorage
     {
-        public void Save(IEnumerable<Index> items)
+        public void SaveFile(Stream data, out long offset, out long size)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Index> Restore()
+        public Stream RestoreFile(long offset, long size)
         {
             throw new NotImplementedException();
         }

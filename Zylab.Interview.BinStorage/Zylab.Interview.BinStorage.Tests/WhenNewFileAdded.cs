@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
 
 namespace Zylab.Interview.BinStorage.Tests
 {
     [TestClass]
-    public class WhenNewItemAdded
+    public class WhenNewFileAdded
     {
         protected static IPersistentIndexStorage PersistentIndexStorage;
+        protected static IPersistentStreamStorage PersistentStreamStorage;
         protected static IndexStorage IndexStorage;
+        protected static StreamStorage StreamStorage;
         protected static IBinaryStorage BinaryStorage;
         protected const string TestKey = "testkey";
         protected static Stream TestStream;
@@ -21,21 +24,16 @@ namespace Zylab.Interview.BinStorage.Tests
         [ClassInitialize]
         public static void Given(TestContext context)
         {
-            PersistentIndexStorage = new FakePersistentStorage();
+            PersistentIndexStorage = new FakePersistentIndexStorage();
             IndexStorage = new IndexStorage(PersistentIndexStorage);
-            BinaryStorage = new BinaryStorage(new StorageConfiguration(), IndexStorage);
+            PersistentStreamStorage = new FakePersistentStreamStorage();
+            StreamStorage = new StreamStorage(PersistentStreamStorage);
+            BinaryStorage = new BinaryStorage(new StorageConfiguration(), IndexStorage, StreamStorage);
             Bytes = new byte[1024];
             Random random = new Random();
             random.NextBytes(Bytes);
             TestStream = new MemoryStream(Bytes);
             BinaryStorage.Add(TestKey, TestStream, new StreamInfo());
-        }
-
-        [ClassCleanup]
-        public static void Cleanup()
-        {
-            TestStream.Dispose();
-            BinaryStorage.Dispose();
         }
 
         [TestMethod]
@@ -73,6 +71,24 @@ namespace Zylab.Interview.BinStorage.Tests
         {
             var index = PersistentIndexStorage.Restore().SingleOrDefault(item=>item.Key == TestKey);
             Assert.IsNotNull(index);
+        }
+
+        [TestMethod]
+        public void FileStreamStoredPersistently()
+        {
+            Stream stream = PersistentStreamStorage.RestoreFile(0, 1024); 
+            Assert.IsNotNull(stream);
+            for (int i = 0; i < Bytes.Length; i++)
+            {
+                Assert.AreEqual(Bytes[i], stream.ReadByte());
+            }
+        }
+    
+        [ClassCleanup]
+        public static void Cleanup()
+        {
+            TestStream.Dispose();
+            BinaryStorage.Dispose();
         }
     }
 }

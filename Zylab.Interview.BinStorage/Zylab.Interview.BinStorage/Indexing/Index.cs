@@ -7,7 +7,7 @@ namespace Zylab.Interview.BinStorage.Indexing
 {
     public class Index
     {
-        public Index(string key, int offset, int size, StreamInfo info)
+        public Index(string key, long offset, long size, StreamInfo info)
         {
             if (string.IsNullOrEmpty(key))  throw new ArgumentException("Key should not be empty.","key");
             if (info == null)               throw new ArgumentNullException("info");
@@ -18,8 +18,8 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public string Key { get; set; }
 
-        public int Offset { get; set; }
+        public long Offset { get; set; }
 
-        public int Size { get; set; }
+        public long Size { get; set; }
     }
 }

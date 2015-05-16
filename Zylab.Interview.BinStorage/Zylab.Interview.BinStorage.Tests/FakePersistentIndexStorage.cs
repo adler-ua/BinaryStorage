@@ -7,7 +7,7 @@ using Zylab.Interview.BinStorage.Indexing;
 
 namespace Zylab.Interview.BinStorage.Tests
 {
-    internal class FakePersistentStorage : IPersistentIndexStorage
+    internal class FakePersistentIndexStorage : IPersistentIndexStorage
     {
         private IEnumerable<Index> _fakeStorage;
 
@@ -19,6 +19,11 @@ namespace Zylab.Interview.BinStorage.Tests
         public IEnumerable<Index> Restore()
         {
             return _fakeStorage;
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

@@ -3,21 +3,27 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Zylab.Interview.BinStorage.Indexing;
 
 namespace Zylab.Interview.BinStorage.Tests
 {
     [TestClass]
     public class WhenNewItemAdded
     {
+        protected static IPersistentIndexStorage PersistentIndexStorage;
+        protected static IndexStorage IndexStorage;
         protected static IBinaryStorage BinaryStorage;
         protected const string TestKey = "testkey";
         protected static Stream TestStream;
         protected static byte[] Bytes;
+        
 
         [ClassInitialize]
         public static void Given(TestContext context)
         {
-            BinaryStorage = new BinaryStorage(new StorageConfiguration());
+            PersistentIndexStorage = new FakePersistentStorage();
+            IndexStorage = new IndexStorage(PersistentIndexStorage);
+            BinaryStorage = new BinaryStorage(new StorageConfiguration(), IndexStorage);
             Bytes = new byte[1024];
             Random random = new Random();
             random.NextBytes(Bytes);
@@ -60,6 +66,13 @@ namespace Zylab.Interview.BinStorage.Tests
             {
                 Assert.AreEqual(Bytes[i],stream.ReadByte());
             }
+        }
+
+        [TestMethod]
+        public void IndexStoredPersistently()
+        {
+            var index = PersistentIndexStorage.Restore().SingleOrDefault(item=>item.Key == TestKey);
+            Assert.IsNotNull(index);
         }
     }
 }

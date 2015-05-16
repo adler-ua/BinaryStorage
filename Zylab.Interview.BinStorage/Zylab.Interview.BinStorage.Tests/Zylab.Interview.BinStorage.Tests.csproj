@@ -51,6 +51,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BinaryStorageTests.cs" />
+    <Compile Include="FakePersistentStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -9,9 +9,10 @@ namespace Zylab.Interview.BinStorage.Indexing
 {
     public interface IPersistentIndexStorage
     {
-        void Save(IEnumerable<Index> items);
+        void Save(Dictionary<string, Index> items);
 
-        IEnumerable<Index> Restore();
+        Dictionary<string, Index> Restore();
+
         void Dispose();
     }
 }

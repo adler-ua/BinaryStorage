@@ -21,7 +21,7 @@ namespace Zylab.Interview.BinStorage.Indexing
         {
             Index index = new Index(key, offset, size, info);
             _cache.Add(key, index);
-            _persistentStorage.Save(_cache.Values);
+            _persistentStorage.Save(_cache);
             return index;
         }
 

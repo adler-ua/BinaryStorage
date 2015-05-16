@@ -77,21 +77,22 @@ namespace Zylab.Interview.BinStorage.Tests
         [TestMethod]
         public void IndexStoredPersistently()
         {
-            var index = PersistentIndexStorage.Restore().SingleOrDefault(item=>item.Key == TestKey);
+            Index index;
+            Assert.IsTrue(PersistentIndexStorage.Restore().TryGetValue(TestKey, out index));
             Assert.IsNotNull(index);
         }
 
         [TestMethod]
         public void IndexHasCorrectOffset()
         {
-            var index = PersistentIndexStorage.Restore().Single(item => item.Key == TestKey);
+            var index = PersistentIndexStorage.Restore()[TestKey];
             Assert.AreEqual(512, index.Offset);
         }
 
         [TestMethod]
         public void IndexHasCorrectSize()
         {
-            var index = PersistentIndexStorage.Restore().Single(item => item.Key == TestKey);
+            var index = PersistentIndexStorage.Restore()[TestKey];
             Assert.AreEqual(1024, index.Size);
         }
 

@@ -9,14 +9,14 @@ namespace Zylab.Interview.BinStorage.Tests
 {
     internal class FakePersistentIndexStorage : IPersistentIndexStorage
     {
-        private IEnumerable<Index> _fakeStorage;
+        private Dictionary<string, Index> _fakeStorage;
 
-        public void Save(IEnumerable<Index> items)
+        public void Save(Dictionary<string, Index> items)
         {
             _fakeStorage = items;
         }
 
-        public IEnumerable<Index> Restore()
+        public Dictionary<string, Index> Restore()
         {
             return _fakeStorage;
         }

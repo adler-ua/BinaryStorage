@@ -16,8 +16,12 @@ namespace Zylab.Interview.BinStorage {
         public BinaryStorage(StorageConfiguration configuration)
         {
             _configuration = configuration;
-            IPersistentIndexStorage persistentIndexStorage = new FileIndexStorage();
+            
+            IPersistentIndexStorage persistentIndexStorage = new FileIndexStorage(configuration.WorkingFolder);
+            IPersistentStreamStorage persistentStreamStorage = new FileStreamStorage(configuration.WorkingFolder);
+            
             _indexStorage = new IndexStorage(persistentIndexStorage);
+            _streamStorage = new StreamStorage(persistentStreamStorage);
         }
 
         public BinaryStorage(StorageConfiguration configuration, IndexStorage indexStorage, StreamStorage streamStorage)

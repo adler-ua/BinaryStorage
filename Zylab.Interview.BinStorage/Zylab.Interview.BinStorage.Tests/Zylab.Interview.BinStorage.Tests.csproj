@@ -50,8 +50,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="BinaryStorageTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Zylab.Interview.BinStorage\Zylab.Interview.BinStorage.csproj">
+      <Project>{d4c5f6a9-7989-40ea-8bbc-07b6e0fd8a47}</Project>
+      <Name>Zylab.Interview.BinStorage</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

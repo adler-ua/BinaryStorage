@@ -5,26 +5,32 @@ using System.Text;
 using System.IO;
 
 namespace Zylab.Interview.BinStorage {
-    public class BinaryStorage : IBinaryStorage {
+    public class BinaryStorage : IBinaryStorage
+    {
+
+        private Dictionary<string, Stream> _storage = new Dictionary<string, Stream>();
 
         public BinaryStorage(StorageConfiguration configuration) {
 
         }
 
         public void Add(string key, Stream data, StreamInfo parameters) {
-            throw new NotImplementedException();
+            _storage.Add(key,data);
         }
 
-        public Stream Get(string key) {
-            throw new NotImplementedException();
+        public Stream Get(string key)
+        {
+            return _storage[key];
         }
 
-        public bool Contains(string key) {
-            throw new NotImplementedException();
+        public bool Contains(string key)
+        {
+            return _storage.ContainsKey(key);
         }
 
-        public void Dispose() {
-            throw new NotImplementedException();
+        public void Dispose()
+        {
+            _storage = null;
         }
     }
 }

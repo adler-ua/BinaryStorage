@@ -20,13 +20,14 @@ namespace Zylab.Interview.BinStorage.FileStorage
 
         public void SaveFile(Stream data, out long offset, out long size)
         {
-            using (FileStream stream = File.OpenWrite(_path))
+            using (FileStream stream = new FileStream(_path,FileMode.Append))
             {
                 byte[] bytes = new byte[data.Length];
                 data.Read(bytes, 0, (int) data.Length);
                 offset = stream.Length;
                 size = data.Length;
-                stream.Write(bytes, 0, bytes.Length);
+                //stream.Seek(0, SeekOrigin.End);
+                stream.Write(bytes, 0, (int)size);
             }
         }
 
@@ -35,7 +36,7 @@ namespace Zylab.Interview.BinStorage.FileStorage
             using (FileStream stream = File.OpenRead(_path))
             {
                 byte[] bytes = new byte[size];
-                //stream.Seek(offset, SeekOrigin.Begin);
+                stream.Seek(offset, SeekOrigin.Begin);
                 stream.Read(bytes, 0, (int) size);
                 Stream s = new MemoryStream(bytes);
                 return s;

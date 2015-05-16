@@ -13,8 +13,8 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public IndexStorage(IPersistentIndexStorage persistentStorage)
         {
-            _cache = new Dictionary<string, Index>();
             _persistentStorage = persistentStorage;
+            _cache = _persistentStorage.Restore();
         }
 
         public Index Add(string key, long offset, long size, StreamInfo info)

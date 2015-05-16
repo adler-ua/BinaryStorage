@@ -17,8 +17,8 @@ namespace Zylab.Interview.BinStorage {
         {
             _configuration = configuration;
             
-            IPersistentIndexStorage persistentIndexStorage = new FileIndexStorage(configuration.WorkingFolder);
-            IPersistentStreamStorage persistentStreamStorage = new FileStreamStorage(configuration.WorkingFolder);
+            IPersistentIndexStorage persistentIndexStorage = new FileIndexStorage(_configuration.WorkingFolder);
+            IPersistentStreamStorage persistentStreamStorage = new FileStreamStorage(_configuration.WorkingFolder);
             
             _indexStorage = new IndexStorage(persistentIndexStorage);
             _streamStorage = new StreamStorage(persistentStreamStorage);
@@ -33,20 +33,29 @@ namespace Zylab.Interview.BinStorage {
 
         public void Add(string key, Stream data, StreamInfo parameters)
         {
-            long offset, size;
-            _streamStorage.SaveFile(data, parameters, out offset, out size);
-            Index index = _indexStorage.Add(key, offset, size, parameters);
+            lock (this)
+            {
+                long offset, size;
+                _streamStorage.SaveFile(data, parameters, out offset, out size);
+                Index index = _indexStorage.Add(key, offset, size, parameters);
+            }
         }
 
         public Stream Get(string key)
         {
-            Index index = _indexStorage.Get(key);
-            return _streamStorage.RestoreFile(index.Offset, index.Size);
+            lock (this)
+            {
+                Index index = _indexStorage.Get(key);
+                return _streamStorage.RestoreFile(index.Offset, index.Size);
+            }
         }
 
         public bool Contains(string key)
         {
-            return _indexStorage.ContainsKey(key);
+            lock (this)
+            {
+                return _indexStorage.ContainsKey(key);
+            }
         }
 
         public void Dispose()

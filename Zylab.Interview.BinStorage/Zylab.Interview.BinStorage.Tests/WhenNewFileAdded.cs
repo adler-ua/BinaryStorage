@@ -25,15 +25,21 @@ namespace Zylab.Interview.BinStorage.Tests
         public static void Given(TestContext context)
         {
             PersistentIndexStorage = new FakePersistentIndexStorage();
+            //PersistentIndexStorage = new FileIndexStorage("G:\\test\\work");
             IndexStorage = new IndexStorage(PersistentIndexStorage);
             PersistentStreamStorage = new FakePersistentStreamStorage();
+            //PersistentStreamStorage = new FileStreamStorage("G:\\test\\work");
             StreamStorage = new StreamStorage(PersistentStreamStorage);
             BinaryStorage = new BinaryStorage(new StorageConfiguration(), IndexStorage, StreamStorage);
 
             Random random = new Random();
             
-            // write first 512 bytes before new file to test non-zero index
-            Bytes = new byte[512];
+            // write first 128 bytes before new file to test non-zero index
+            Bytes = new byte[128];
+            //for (byte i = 0; i < 128; i++)
+            //{
+            //    Bytes[i] = i;
+            //}
             random.NextBytes(Bytes);
             BinaryStorage.Add("fakekey", new MemoryStream(Bytes), new StreamInfo());
             // ------------------------------------------------------------
@@ -70,7 +76,8 @@ namespace Zylab.Interview.BinStorage.Tests
             Stream stream = BinaryStorage.Get(TestKey);
             for (int i = 0; i < Bytes.Length; i++)
             {
-                Assert.AreEqual(Bytes[i],stream.ReadByte());
+                int actual = stream.ReadByte();
+                Assert.AreEqual(Bytes[i],actual);
             }
         }
 
@@ -86,7 +93,7 @@ namespace Zylab.Interview.BinStorage.Tests
         public void IndexHasCorrectOffset()
         {
             var index = PersistentIndexStorage.Restore()[TestKey];
-            Assert.AreEqual(512, index.Offset);
+            Assert.AreEqual(128, index.Offset);
         }
 
         [TestMethod]
@@ -99,7 +106,7 @@ namespace Zylab.Interview.BinStorage.Tests
         [TestMethod]
         public void FileStreamStoredPersistently()
         {
-            Stream stream = PersistentStreamStorage.RestoreFile(512, 1024); 
+            Stream stream = PersistentStreamStorage.RestoreFile(128, 1024); 
             Assert.IsNotNull(stream);
             for (int i = 0; i < Bytes.Length; i++)
             {

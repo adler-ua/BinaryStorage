@@ -66,7 +66,7 @@ namespace Zylab.Interview.BinStorage {
             long offset, size;
             _rwLock.RunWithWriteLock(key, () =>
             {
-                _streamStorage.SaveFile(data, parameters, out offset, out size);
+                _streamStorage.SaveFile(key, data, parameters, out offset, out size);
                 Index index = _indexStorage.Add(key, offset, size, parameters);
             });
         }
@@ -96,7 +96,7 @@ namespace Zylab.Interview.BinStorage {
             return _rwLock.RunWithReadLock(key, () =>
             {
                 Index index = _indexStorage.Get(key);
-                return _streamStorage.RestoreFile(index.Offset, index.Size);
+                return _streamStorage.RestoreFile(key, index.Offset, index.Size);
             });
         }
 

@@ -32,6 +32,10 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public Index Get(string key)
         {
+            if (!_cache.ContainsKey(key))
+            {
+                throw new UnknownKeyException(key);
+            }
             return _cache[key];
         }
 

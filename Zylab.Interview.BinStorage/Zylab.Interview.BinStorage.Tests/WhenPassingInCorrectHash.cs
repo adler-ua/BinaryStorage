@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,8 +9,9 @@ using Zylab.Interview.BinStorage.Indexing;
 namespace Zylab.Interview.BinStorage.Tests
 {
     [TestClass]
-    public class WhenAddingDuplicateKey
+    public class WhenPassingIncorrectHash
     {
+
         protected static IPersistentIndexStorage PersistentIndexStorage;
         protected static IPersistentStreamStorage PersistentStreamStorage;
         protected static IndexStorage IndexStorage;
@@ -20,7 +20,7 @@ namespace Zylab.Interview.BinStorage.Tests
         protected const string TestKey = "testkey";
         protected static Stream TestStream;
         protected static byte[] Bytes;
-        
+
 
         [ClassInitialize]
         public static void Given(TestContext context)
@@ -35,21 +35,24 @@ namespace Zylab.Interview.BinStorage.Tests
             Bytes = new byte[1024];
             random.NextBytes(Bytes);
             TestStream = new MemoryStream(Bytes);
-            BinaryStorage.Add(TestKey, TestStream, new StreamInfo());
+            using (MD5 md5 = MD5.Create())
+            {
+                Assert.IsTrue(md5.ComputeHash(TestStream).SequenceEqual(md5.ComputeHash(Bytes)));
+            }
         }
 
         [TestMethod]
-        [ExpectedException(typeof (DuplicateKeyException))]
-        public void TrowsAnException()
+        [ExpectedException(typeof(IncorrectHashException))]
+        public void ThrowsException()
         {
-            BinaryStorage.Add(TestKey, new MemoryStream(), new StreamInfo());
-        }
-    
-        [ClassCleanup]
-        public static void Cleanup()
-        {
-            TestStream.Dispose();
-            BinaryStorage.Dispose();
+            var bytesForIncorrectHash = new byte[128];
+            Random random = new Random();
+            random.NextBytes(bytesForIncorrectHash);
+
+            using (MD5 md5 = MD5.Create())
+            {
+                BinaryStorage.Add(TestKey, TestStream, new StreamInfo() { Hash = md5.ComputeHash(bytesForIncorrectHash) });
+            }
         }
     }
 }

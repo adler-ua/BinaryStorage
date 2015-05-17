@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
@@ -41,7 +42,10 @@ namespace Zylab.Interview.BinStorage.Tests
             Bytes = new byte[1024];
             random.NextBytes(Bytes);
             TestStream = new MemoryStream(Bytes);
-            BinaryStorage.Add(TestKey, TestStream, new StreamInfo());
+            using (MD5 md5 = MD5.Create())
+            {
+                BinaryStorage.Add(TestKey, TestStream, new StreamInfo() {Hash = md5.ComputeHash(Bytes)});
+            }
         }
 
         [TestMethod]

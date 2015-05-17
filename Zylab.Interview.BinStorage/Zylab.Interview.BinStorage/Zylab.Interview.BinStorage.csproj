@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="BinaryStorage.cs" />
     <Compile Include="FileStorage\FileStreamStorage.cs" />
+    <Compile Include="FileStorage\IncorrectHashException.cs" />
     <Compile Include="FileStorage\IPersistentStreamStorage.cs" />
     <Compile Include="FileStorage\StreamStorage.cs" />
     <Compile Include="IBinaryStorage.cs" />

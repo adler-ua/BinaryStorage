@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
@@ -48,6 +49,20 @@ namespace Zylab.Interview.BinStorage {
             {
                 _rwIndexLock.ExitReadLock();
             }
+
+            // check md5 hash
+            if (parameters.Hash != null)
+            {
+                using (MD5 md5 = MD5.Create())
+                {
+                    if (!md5.ComputeHash(data).SequenceEqual(parameters.Hash))
+                    {
+                        throw new IncorrectHashException(key);
+                    }
+                }
+            }
+            // --------------
+
             long offset, size;
             _rwStorageLock.EnterWriteLock();
             try

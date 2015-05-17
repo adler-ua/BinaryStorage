@@ -51,6 +51,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="FakePersistentStreamStorage.cs" />
+    <Compile Include="UnitTest1.cs" />
+    <Compile Include="WhenPassingIncorrectHash.cs" />
     <Compile Include="WhenAddingDuplicateKey.cs" />
     <Compile Include="WhenNewFileAdded.cs" />
     <Compile Include="FakePersistentIndexStorage.cs" />

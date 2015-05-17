@@ -69,6 +69,7 @@
     <Compile Include="FileStorage\IPersistentStreamStorage.cs" />
     <Compile Include="FileStorage\StreamStorage.cs" />
     <Compile Include="IBinaryStorage.cs" />
+    <Compile Include="Indexing\DuplicateKeyException.cs" />
     <Compile Include="Indexing\FileIndexStorage.cs" />
     <Compile Include="Indexing\IPersistentIndexStorage.cs" />
     <Compile Include="Indexing\Index.cs" />

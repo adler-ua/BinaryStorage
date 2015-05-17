@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,61 +12,68 @@ namespace Zylab.Interview.BinStorage.Indexing
     {
         private readonly string _path;
         private const string IndexFileName = "index.json";
+        private readonly object _locker = new object();
 
         public FileIndexStorage(string directory)
         {
             _path = Path.Combine(directory, IndexFileName);
         }
 
-        public void Save(Dictionary<string, Index> items)
+        public void Save(ConcurrentDictionary<string, Index> items)
         {
-            using (FileStream fileStream = new FileStream(_path, FileMode.OpenOrCreate, FileAccess.Write))
-            using (StreamWriter writer = new StreamWriter(fileStream))
-            using (JsonWriter jsonWriter = new JsonTextWriter(writer))
+            lock (_locker)
             {
-                jsonWriter.Formatting = Formatting.Indented;
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(jsonWriter, items);
+                using (FileStream fileStream = new FileStream(_path, FileMode.OpenOrCreate, FileAccess.Write))
+                using (StreamWriter writer = new StreamWriter(fileStream))
+                using (JsonWriter jsonWriter = new JsonTextWriter(writer))
+                {
+                    jsonWriter.Formatting = Formatting.Indented;
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(jsonWriter, items);
+                }
             }
         }
 
         public void Save(Index item)
         {
             JsonConvert.SerializeObject(item, Formatting.Indented);
-            using (FileStream fileStream = new FileStream(_path, FileMode.OpenOrCreate, FileAccess.Write))
+            lock (_locker)
             {
-                if (fileStream.Length == 0)
+                using (FileStream fileStream = new FileStream(_path, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    using (StreamWriter writer = new StreamWriter(fileStream))
-                    using (JsonWriter jsonWriter = new JsonTextWriter(writer))
+                    if (fileStream.Length == 0)
                     {
-                        jsonWriter.Formatting = Formatting.Indented;
-                        JsonSerializer serializer = new JsonSerializer();
-                        serializer.Serialize(jsonWriter, new Dictionary<string, Index>() {{item.Key, item}});
+                        using (StreamWriter writer = new StreamWriter(fileStream))
+                        using (JsonWriter jsonWriter = new JsonTextWriter(writer))
+                        {
+                            jsonWriter.Formatting = Formatting.Indented;
+                            JsonSerializer serializer = new JsonSerializer();
+                            serializer.Serialize(jsonWriter, new Dictionary<string, Index>() {{item.Key, item}});
+                        }
                     }
-                }
-                else
-                {
-                    fileStream.Seek(-1, SeekOrigin.End);
-                    string itemSerialized = JsonConvert.SerializeObject(item, Formatting.Indented);
-                    using (StreamWriter sw = new StreamWriter(fileStream))
+                    else
                     {
-                        sw.Write(",\n{0}: {1} }}", JsonUtils.EncodeJsString(item.Key), itemSerialized);
+                        fileStream.Seek(-1, SeekOrigin.End);
+                        string itemSerialized = JsonConvert.SerializeObject(item, Formatting.Indented);
+                        using (StreamWriter sw = new StreamWriter(fileStream))
+                        {
+                            sw.Write(",\n{0}: {1} }}", JsonUtils.EncodeJsString(item.Key), itemSerialized);
+                        }
                     }
                 }
             }
         }
 
-        public Dictionary<string, Index> Restore()
+        public ConcurrentDictionary<string, Index> Restore()
         {
             if (!File.Exists(_path))
             {
-                return new Dictionary<string, Index>();
+                return new ConcurrentDictionary<string, Index>();
             }
             using (StreamReader sr = File.OpenText(_path))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                var indices = (Dictionary<string, Index>)serializer.Deserialize(sr, typeof (Dictionary<string, Index>));
+                var indices = (ConcurrentDictionary<string, Index>)serializer.Deserialize(sr, typeof (ConcurrentDictionary<string, Index>));
                 return indices;
             }
         }

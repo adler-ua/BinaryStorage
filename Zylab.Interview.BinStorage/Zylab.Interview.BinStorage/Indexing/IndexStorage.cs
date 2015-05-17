@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Zylab.Interview.BinStorage.Indexing
 {
     public class IndexStorage
     {
-        private Dictionary<string, Index> _cache;
+        private ConcurrentDictionary<string, Index> _cache;
         private IPersistentIndexStorage _persistentStorage;
 
         public IndexStorage(IPersistentIndexStorage persistentStorage)
@@ -20,7 +21,7 @@ namespace Zylab.Interview.BinStorage.Indexing
         public Index Add(string key, long offset, long size, StreamInfo info)
         {
             Index index = new Index(key, offset, size, info);
-            _cache.Add(key, index);
+            _cache[key] = index;
             _persistentStorage.Save(index);
             return index;
         }

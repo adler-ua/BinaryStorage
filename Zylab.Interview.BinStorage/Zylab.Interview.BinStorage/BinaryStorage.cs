@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
+using Newtonsoft.Json.Converters;
 using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
 
@@ -14,8 +15,7 @@ namespace Zylab.Interview.BinStorage {
         private readonly StorageConfiguration _configuration;
         private readonly IndexStorage _indexStorage;
         private readonly StreamStorage _streamStorage;
-        private readonly ReaderWriterLockSlim _rwIndexLock = new ReaderWriterLockSlim();
-        private readonly ReaderWriterLockSlim _rwStorageLock = new ReaderWriterLockSlim();
+        private readonly NamedReaderWriterLock _rwLock = new NamedReaderWriterLock();
         
         public BinaryStorage(StorageConfiguration configuration)
         {
@@ -37,20 +37,26 @@ namespace Zylab.Interview.BinStorage {
 
         public void Add(string key, Stream data, StreamInfo parameters)
         {
-            _rwIndexLock.EnterReadLock();
-            try
+            _rwLock.RunWithReadLock(key, () =>
             {
                 if (_indexStorage.ContainsKey(key))
                 {
                     throw new DuplicateKeyException(key);
                 }
-            }
-            finally
-            {
-                _rwIndexLock.ExitReadLock();
-            }
+            });
 
-            // check md5 hash
+            ValidateHash(key, data, parameters);
+
+            long offset, size;
+            _rwLock.RunWithWriteLock(key, () =>
+            {
+                _streamStorage.SaveFile(data, parameters, out offset, out size);
+                Index index = _indexStorage.Add(key, offset, size, parameters);
+            });
+        }
+
+        private static void ValidateHash(string key, Stream data, StreamInfo parameters)
+        {
             if (parameters.Hash != null)
             {
                 using (MD5 md5 = MD5.Create())
@@ -62,53 +68,20 @@ namespace Zylab.Interview.BinStorage {
                 }
                 data.Seek(0, SeekOrigin.Begin);
             }
-
-            long offset, size;
-            _rwStorageLock.EnterWriteLock();
-            try
-            {
-                _streamStorage.SaveFile(data, parameters, out offset, out size);
-            }
-            finally
-            {
-                _rwStorageLock.ExitWriteLock();
-            }
-            _rwIndexLock.EnterWriteLock();
-            try
-            {
-                Index index = _indexStorage.Add(key, offset, size, parameters);
-            }
-            finally
-            {
-                _rwIndexLock.ExitWriteLock();
-            }
         }
 
         public Stream Get(string key)
         {
-            _rwIndexLock.EnterReadLock();
-            try
+            return _rwLock.RunWithReadLock(key, () =>
             {
                 Index index = _indexStorage.Get(key);
                 return _streamStorage.RestoreFile(index.Offset, index.Size);
-            }
-            finally
-            {
-                _rwIndexLock.ExitReadLock();
-            }
+            });
         }
 
         public bool Contains(string key)
         {
-            _rwIndexLock.EnterReadLock();
-            try
-            {
-                return _indexStorage.ContainsKey(key);
-            }
-            finally
-            {
-                _rwIndexLock.ExitReadLock();
-            }
+            return _rwLock.RunWithReadLock(key, () => _indexStorage.ContainsKey(key));
         }
 
         public void Dispose()

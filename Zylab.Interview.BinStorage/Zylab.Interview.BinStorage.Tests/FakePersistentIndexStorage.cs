@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +10,9 @@ namespace Zylab.Interview.BinStorage.Tests
 {
     internal class FakePersistentIndexStorage : IPersistentIndexStorage
     {
-        private Dictionary<string, Index> _fakeStorage = new Dictionary<string, Index>();
+        private ConcurrentDictionary<string, Index> _fakeStorage = new ConcurrentDictionary<string, Index>();
 
-        public void Save(Dictionary<string, Index> items)
+        public void Save(ConcurrentDictionary<string, Index> items)
         {
             _fakeStorage = items;
         }
@@ -21,7 +22,7 @@ namespace Zylab.Interview.BinStorage.Tests
             _fakeStorage[item.Key] = item;
         }
 
-        public Dictionary<string, Index> Restore()
+        public ConcurrentDictionary<string, Index> Restore()
         {
             return _fakeStorage;
         }

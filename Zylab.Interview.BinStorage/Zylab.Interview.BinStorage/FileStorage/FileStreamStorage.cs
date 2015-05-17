@@ -11,6 +11,7 @@ namespace Zylab.Interview.BinStorage.FileStorage
         private readonly string _directory;
         private readonly string _path;
         private const string StreamStorageFileName = "storage.bin";
+        private readonly object _locker = new object();
 
         public FileStreamStorage(string directory)
         {
@@ -20,11 +21,14 @@ namespace Zylab.Interview.BinStorage.FileStorage
 
         public void SaveFile(Stream data, out long offset, out long size)
         {
-            using (FileStream stream = new FileStream(_path,FileMode.Append))
+            lock (_locker)
             {
-                offset = stream.Length;
-                size = data.Length;
-                data.CopyTo(stream);
+                using (FileStream stream = new FileStream(_path, FileMode.Append))
+                {
+                    offset = stream.Length;
+                    size = data.Length;
+                    data.CopyTo(stream);
+                }
             }
         }
 

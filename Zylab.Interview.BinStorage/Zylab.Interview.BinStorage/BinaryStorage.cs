@@ -14,8 +14,8 @@ namespace Zylab.Interview.BinStorage {
         private readonly StorageConfiguration _configuration;
         private readonly IndexStorage _indexStorage;
         private readonly StreamStorage _streamStorage;
-        private readonly ReaderWriterLockSlim _rwIndexLock = new ReaderWriterLockSlim();
-        private readonly ReaderWriterLockSlim _rwStorageLock = new ReaderWriterLockSlim();
+        private static readonly ReaderWriterLockSlim RwIndexLock = new ReaderWriterLockSlim();
+        private static readonly ReaderWriterLockSlim RwStorageLock = new ReaderWriterLockSlim();
         
         public BinaryStorage(StorageConfiguration configuration)
         {
@@ -24,8 +24,24 @@ namespace Zylab.Interview.BinStorage {
             IPersistentIndexStorage persistentIndexStorage = new FileIndexStorage(_configuration.WorkingFolder);
             IPersistentStreamStorage persistentStreamStorage = new FileStreamStorage(_configuration.WorkingFolder);
             
-            _indexStorage = new IndexStorage(persistentIndexStorage);
-            _streamStorage = new StreamStorage(persistentStreamStorage);
+            RwIndexLock.EnterReadLock();
+            try
+            {
+                _indexStorage = new IndexStorage(persistentIndexStorage);
+            }
+            finally
+            {
+                RwIndexLock.ExitReadLock();
+            }
+            RwStorageLock.EnterReadLock();
+            try
+            {
+                _streamStorage = new StreamStorage(persistentStreamStorage);
+            }
+            finally
+            {
+                RwStorageLock.ExitReadLock();
+            }
         }
 
         public BinaryStorage(StorageConfiguration configuration, IndexStorage indexStorage, StreamStorage streamStorage)
@@ -38,7 +54,7 @@ namespace Zylab.Interview.BinStorage {
         public void Add(string key, Stream data, StreamInfo parameters)
         {
             CheckKey(key);
-            _rwStorageLock.EnterWriteLock();
+            RwStorageLock.EnterWriteLock();
             try
             {
                 long offset = _streamStorage.EvaluateOffset();
@@ -60,27 +76,27 @@ namespace Zylab.Interview.BinStorage {
             }
             finally
             {
-                _rwStorageLock.ExitWriteLock();
+                RwStorageLock.ExitWriteLock();
             }
             
         }
 
         private void RevertIndexInsert(string key)
         {
-            _rwIndexLock.EnterWriteLock();
+            RwIndexLock.EnterWriteLock();
             try
             {
                 _indexStorage.Remove(key);
             }
             finally
             {
-                _rwIndexLock.ExitWriteLock();
+                RwIndexLock.ExitWriteLock();
             }
         }
 
         private void CheckKey(string key)
         {
-            _rwIndexLock.EnterReadLock();
+            RwIndexLock.EnterReadLock();
             try
             {
                 if (_indexStorage.ContainsKey(key))
@@ -90,26 +106,26 @@ namespace Zylab.Interview.BinStorage {
             }
             finally
             {
-                _rwIndexLock.ExitReadLock();
+                RwIndexLock.ExitReadLock();
             }
         }
 
         private void InsertIndex(string key, Stream data, StreamInfo parameters, long offset)
         {
-            _rwIndexLock.EnterWriteLock();
+            RwIndexLock.EnterWriteLock();
             try
             {
                 Index index = _indexStorage.Add(key, offset, data.Length, parameters);
             }
             finally
             {
-                _rwIndexLock.ExitWriteLock();
+                RwIndexLock.ExitWriteLock();
             }
         }
 
         public Stream Get(string key)
         {
-            _rwIndexLock.EnterReadLock();
+            RwIndexLock.EnterReadLock();
             try
             {
                 Index index = _indexStorage.Get(key);
@@ -117,20 +133,20 @@ namespace Zylab.Interview.BinStorage {
             }
             finally
             {
-                _rwIndexLock.ExitReadLock();
+                RwIndexLock.ExitReadLock();
             }
         }
 
         public bool Contains(string key)
         {
-            _rwIndexLock.EnterReadLock();
+            RwIndexLock.EnterReadLock();
             try
             {
                 return _indexStorage.ContainsKey(key);
             }
             finally
             {
-                _rwIndexLock.ExitReadLock();
+                RwIndexLock.ExitReadLock();
             }
         }
 

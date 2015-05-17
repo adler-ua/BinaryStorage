@@ -36,10 +36,6 @@ namespace Zylab.Interview.BinStorage.Tests
             
             // write first 128 bytes before new file to test non-zero index
             Bytes = new byte[128];
-            //for (byte i = 0; i < 128; i++)
-            //{
-            //    Bytes[i] = i;
-            //}
             random.NextBytes(Bytes);
             BinaryStorage.Add("fakekey", new MemoryStream(Bytes), new StreamInfo());
             // ------------------------------------------------------------

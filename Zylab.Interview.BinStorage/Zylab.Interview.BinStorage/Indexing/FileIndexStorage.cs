@@ -9,14 +9,12 @@ namespace Zylab.Interview.BinStorage.Indexing
 {
     public class FileIndexStorage : IPersistentIndexStorage
     {
-        private readonly string _directory;
         private readonly string _path;
         private const string IndexFileName = "index.json";
 
         public FileIndexStorage(string directory)
         {
-            _directory = directory;
-            _path = Path.Combine(_directory, IndexFileName);
+            _path = Path.Combine(directory, IndexFileName);
         }
 
         public void Save(Dictionary<string, Index> items)
@@ -33,7 +31,6 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public Dictionary<string, Index> Restore()
         {
-            string path = Path.Combine(_directory, IndexFileName);
             if (!File.Exists(_path))
             {
                 return new Dictionary<string, Index>();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Threading;
 using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
 
@@ -12,6 +13,7 @@ namespace Zylab.Interview.BinStorage {
         private readonly StorageConfiguration _configuration;
         private readonly IndexStorage _indexStorage;
         private readonly StreamStorage _streamStorage;
+        private readonly ReaderWriterLockSlim _rwLock = new ReaderWriterLockSlim();
         
         public BinaryStorage(StorageConfiguration configuration)
         {
@@ -33,28 +35,51 @@ namespace Zylab.Interview.BinStorage {
 
         public void Add(string key, Stream data, StreamInfo parameters)
         {
-            lock (this)
+            _rwLock.EnterUpgradeableReadLock();
+            try
             {
-                long offset, size;
-                _streamStorage.SaveFile(data, parameters, out offset, out size);
-                Index index = _indexStorage.Add(key, offset, size, parameters);
+                _rwLock.EnterWriteLock();
+                try
+                {
+                    long offset, size;
+                    _streamStorage.SaveFile(data, parameters, out offset, out size);
+                    Index index = _indexStorage.Add(key, offset, size, parameters);
+                }
+                finally
+                {
+                    _rwLock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+                _rwLock.ExitUpgradeableReadLock();
             }
         }
 
         public Stream Get(string key)
         {
-            lock (this)
+            _rwLock.EnterReadLock();
+            try
             {
                 Index index = _indexStorage.Get(key);
                 return _streamStorage.RestoreFile(index.Offset, index.Size);
+            }
+            finally
+            {
+                _rwLock.ExitReadLock();
             }
         }
 
         public bool Contains(string key)
         {
-            lock (this)
+            _rwLock.EnterReadLock();
+            try
             {
                 return _indexStorage.ContainsKey(key);
+            }
+            finally
+            {
+                _rwLock.ExitReadLock();
             }
         }
 

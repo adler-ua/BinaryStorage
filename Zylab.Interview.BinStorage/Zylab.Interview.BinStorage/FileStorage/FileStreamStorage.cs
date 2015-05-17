@@ -22,12 +22,9 @@ namespace Zylab.Interview.BinStorage.FileStorage
         {
             using (FileStream stream = new FileStream(_path,FileMode.Append))
             {
-                byte[] bytes = new byte[data.Length];
-                data.Read(bytes, 0, (int) data.Length);
                 offset = stream.Length;
                 size = data.Length;
-                //stream.Seek(0, SeekOrigin.End);
-                stream.Write(bytes, 0, (int)size);
+                data.CopyTo(stream);
             }
         }
 
@@ -38,6 +35,8 @@ namespace Zylab.Interview.BinStorage.FileStorage
                 byte[] bytes = new byte[size];
                 stream.Seek(offset, SeekOrigin.Begin);
                 stream.Read(bytes, 0, (int) size);
+                //MemoryStream ms = new MemoryStream();
+                
                 Stream s = new MemoryStream(bytes);
                 return s;
             }

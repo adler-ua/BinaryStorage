@@ -51,6 +51,7 @@ namespace Zylab.Interview.BinStorage {
             {
                 using (MD5 md5 = MD5.Create())
                 {
+                    parameters = (StreamInfo)parameters.Clone();
                     parameters.Hash = md5.ComputeHash(data);
                     data.Seek(0, SeekOrigin.Begin);
                 }

@@ -53,6 +53,7 @@
     <Compile Include="FakePersistentStreamStorage.cs" />
     <Compile Include="WhenAddingDuplicateBinaryData.cs" />
     <Compile Include="WhenAttemptToUseWrongKeyToGet.cs" />
+    <Compile Include="WhenNewFileAddedToBeCompressed.cs" />
     <Compile Include="WhenPassingIncorrectHash.cs" />
     <Compile Include="WhenAddingDuplicateKey.cs" />
     <Compile Include="WhenNewFileAdded.cs" />

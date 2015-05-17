@@ -60,8 +60,8 @@ namespace Zylab.Interview.BinStorage {
                         throw new IncorrectHashException(key);
                     }
                 }
+                data.Seek(0, SeekOrigin.Begin);
             }
-            // --------------
 
             long offset, size;
             _rwStorageLock.EnterWriteLock();

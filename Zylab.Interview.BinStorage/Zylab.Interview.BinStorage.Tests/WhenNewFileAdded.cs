@@ -42,9 +42,10 @@ namespace Zylab.Interview.BinStorage.Tests
             Bytes = new byte[1024];
             random.NextBytes(Bytes);
             TestStream = new MemoryStream(Bytes);
+            
             using (MD5 md5 = MD5.Create())
             {
-                BinaryStorage.Add(TestKey, TestStream, new StreamInfo() {Hash = md5.ComputeHash(Bytes)});
+                BinaryStorage.Add(TestKey, TestStream, new StreamInfo() { Hash = md5.ComputeHash(Bytes) });
             }
         }
 

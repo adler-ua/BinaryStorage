@@ -29,6 +29,33 @@ namespace Zylab.Interview.BinStorage.Indexing
             }
         }
 
+        public void Save(Index item)
+        {
+            JsonConvert.SerializeObject(item, Formatting.Indented);
+            using (FileStream fileStream = new FileStream(_path, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                if (fileStream.Length == 0)
+                {
+                    using (StreamWriter writer = new StreamWriter(fileStream))
+                    using (JsonWriter jsonWriter = new JsonTextWriter(writer))
+                    {
+                        jsonWriter.Formatting = Formatting.Indented;
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Serialize(jsonWriter, new Dictionary<string, Index>() {{item.Key, item}});
+                    }
+                }
+                else
+                {
+                    fileStream.Seek(-1, SeekOrigin.End);
+                    string itemSerialized = JsonConvert.SerializeObject(item, Formatting.Indented);
+                    using (StreamWriter sw = new StreamWriter(fileStream))
+                    {
+                        sw.Write(",\n{0}: {1} }}", JsonUtils.EncodeJsString(item.Key), itemSerialized);
+                    }
+                }
+            }
+        }
+
         public Dictionary<string, Index> Restore()
         {
             if (!File.Exists(_path))

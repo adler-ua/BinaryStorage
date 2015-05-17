@@ -11,6 +11,8 @@ namespace Zylab.Interview.BinStorage.Indexing
     {
         void Save(Dictionary<string, Index> items);
 
+        void Save(Index item);
+
         Dictionary<string, Index> Restore();
 
         void Dispose();

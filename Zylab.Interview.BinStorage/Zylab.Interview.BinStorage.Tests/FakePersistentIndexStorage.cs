@@ -16,6 +16,11 @@ namespace Zylab.Interview.BinStorage.Tests
             _fakeStorage = items;
         }
 
+        public void Save(Index item)
+        {
+            _fakeStorage[item.Key] = item;
+        }
+
         public Dictionary<string, Index> Restore()
         {
             return _fakeStorage;

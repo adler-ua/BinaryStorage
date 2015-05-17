@@ -25,10 +25,8 @@ namespace Zylab.Interview.BinStorage.Tests
         public static void Given(TestContext context)
         {
             PersistentIndexStorage = new FakePersistentIndexStorage();
-            //PersistentIndexStorage = new FileIndexStorage("G:\\test\\work");
             IndexStorage = new IndexStorage(PersistentIndexStorage);
             PersistentStreamStorage = new FakePersistentStreamStorage();
-            //PersistentStreamStorage = new FileStreamStorage("G:\\test\\work");
             StreamStorage = new StreamStorage(PersistentStreamStorage);
             BinaryStorage = new BinaryStorage(new StorageConfiguration(), IndexStorage, StreamStorage);
 
@@ -67,7 +65,7 @@ namespace Zylab.Interview.BinStorage.Tests
         }
 
         [TestMethod]
-        public void AndTheSameContent()
+        public void AndTheSameStreamContent()
         {
             Stream stream = BinaryStorage.Get(TestKey);
             for (int i = 0; i < Bytes.Length; i++)
@@ -97,17 +95,6 @@ namespace Zylab.Interview.BinStorage.Tests
         {
             var index = PersistentIndexStorage.Restore()[TestKey];
             Assert.AreEqual(1024, index.Size);
-        }
-
-        [TestMethod]
-        public void FileStreamStoredPersistently()
-        {
-            Stream stream = PersistentStreamStorage.RestoreFile(128, 1024); 
-            Assert.IsNotNull(stream);
-            for (int i = 0; i < Bytes.Length; i++)
-            {
-                Assert.AreEqual(Bytes[i], stream.ReadByte());
-            }
         }
     
         [ClassCleanup]

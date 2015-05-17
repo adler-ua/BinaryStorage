@@ -21,8 +21,29 @@ namespace Zylab.Interview.BinStorage.FileStorage
         }
 
         public Stream RestoreFile(long offset, long size)
-        {
-            return _persistentStreamStorage.RestoreFile(offset, size);
+        {   
+            const int BUFFER_SIZE = 4096;
+            byte[] buffer = new byte[4096];
+
+            Stream destination = new MemoryStream();
+            using (Stream source = _persistentStreamStorage.OpenReadStorageStream())
+            {
+                source.Seek(offset, SeekOrigin.Begin);
+                int bytesToRead = (int)Math.Min(BUFFER_SIZE, size);
+                int bytesRead;
+                while ((bytesRead = source.Read(buffer, 0, bytesToRead)) > 0)
+                {
+                    destination.Write(buffer, 0, bytesRead);
+                    size -= bytesRead;
+                    bytesToRead = (int)Math.Min(BUFFER_SIZE, size);
+                    if (bytesToRead <= 0)
+                    {
+                        destination.Seek(0, SeekOrigin.Begin);
+                        break;
+                    }
+                }
+            }
+            return destination;
         }
 
         public void Dispose()

@@ -28,18 +28,9 @@ namespace Zylab.Interview.BinStorage.FileStorage
             }
         }
 
-        public Stream RestoreFile(long offset, long size)
+        public Stream OpenReadStorageStream()
         {
-            using (FileStream stream = File.OpenRead(_path))
-            {
-                byte[] bytes = new byte[size];
-                stream.Seek(offset, SeekOrigin.Begin);
-                stream.Read(bytes, 0, (int) size);
-                //MemoryStream ms = new MemoryStream();
-                
-                Stream s = new MemoryStream(bytes);
-                return s;
-            }
+            return File.OpenRead(_path);
         }
 
         public void Dispose()

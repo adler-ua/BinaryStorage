@@ -10,6 +10,6 @@ namespace Zylab.Interview.BinStorage.FileStorage
     {
         void SaveFile(Stream data, out long offset, out long size);
 
-        Stream RestoreFile(long offset, long size);
+        Stream OpenReadStorageStream();
     }
 }

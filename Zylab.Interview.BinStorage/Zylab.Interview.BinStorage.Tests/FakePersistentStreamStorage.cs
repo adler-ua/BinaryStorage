@@ -27,13 +27,13 @@ namespace Zylab.Interview.BinStorage.Tests
             _fakeStream.Write(bytes, 0, bytes.Length);
         }
 
-        public Stream RestoreFile(long offset, long size)
+        public Stream OpenReadStorageStream()
         {
-            byte[] bytes = new byte[size];
-            _fakeStream.Seek(offset, SeekOrigin.Begin);
-            _fakeStream.Read(bytes, 0, (int)size);
-            Stream s = new MemoryStream(bytes);
-            return s;
+            MemoryStream copy = new MemoryStream();
+            _fakeStream.Seek(0, SeekOrigin.Begin);
+            _fakeStream.CopyTo(copy);
+            _fakeStream.Seek(0, SeekOrigin.End);
+            return copy;
         }
 
         public void Dispose()

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
 
@@ -36,6 +37,49 @@ namespace Zylab.Interview.BinStorage {
 
         public void Add(string key, Stream data, StreamInfo parameters)
         {
+            CheckKey(key);
+            _rwStorageLock.EnterWriteLock();
+            try
+            {
+                long offset = _streamStorage.EvaluateOffset();
+                Task t = Task.Factory.StartNew(() =>
+                {
+                    InsertIndex(key, data, parameters, offset);
+                });
+                try
+                {
+                    _streamStorage.SaveFile(data, parameters);
+                }
+                catch (Exception ex)
+                {
+                    t.Wait();
+                    RevertIndexInsert(key);
+                    throw;
+                }
+                t.Wait();
+            }
+            finally
+            {
+                _rwStorageLock.ExitWriteLock();
+            }
+            
+        }
+
+        private void RevertIndexInsert(string key)
+        {
+            _rwIndexLock.EnterWriteLock();
+            try
+            {
+                _indexStorage.Remove(key);
+            }
+            finally
+            {
+                _rwIndexLock.ExitWriteLock();
+            }
+        }
+
+        private void CheckKey(string key)
+        {
             _rwIndexLock.EnterReadLock();
             try
             {
@@ -48,20 +92,14 @@ namespace Zylab.Interview.BinStorage {
             {
                 _rwIndexLock.ExitReadLock();
             }
-            long offset, size;
-            _rwStorageLock.EnterWriteLock();
-            try
-            {
-                _streamStorage.SaveFile(data, parameters, out offset, out size);
-            }
-            finally
-            {
-                _rwStorageLock.ExitWriteLock();
-            }
+        }
+
+        private void InsertIndex(string key, Stream data, StreamInfo parameters, long offset)
+        {
             _rwIndexLock.EnterWriteLock();
             try
             {
-                Index index = _indexStorage.Add(key, offset, size, parameters);
+                Index index = _indexStorage.Add(key, offset, data.Length, parameters);
             }
             finally
             {

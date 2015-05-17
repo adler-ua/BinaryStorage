@@ -15,9 +15,9 @@ namespace Zylab.Interview.BinStorage.FileStorage
             _persistentStreamStorage = persistentStreamStorage;
         }
 
-        public void SaveFile(Stream data, StreamInfo streamInfo, out long offset, out long size)
+        public void SaveFile(Stream data, StreamInfo streamInfo)
         {
-            _persistentStreamStorage.SaveFile(data, out offset, out size);
+            _persistentStreamStorage.SaveFile(data);
         }
 
         public Stream RestoreFile(long offset, long size)
@@ -28,6 +28,11 @@ namespace Zylab.Interview.BinStorage.FileStorage
         public void Dispose()
         {
             _persistentStreamStorage.Dispose();
+        }
+
+        public long EvaluateOffset()
+        {
+            return _persistentStreamStorage.EvaluateOffset();
         }
     }
 }

@@ -18,12 +18,10 @@ namespace Zylab.Interview.BinStorage.Tests
             _fakeStream = new MemoryStream();
         }
 
-        public void SaveFile(Stream data, out long offset, out long size)
+        public void SaveFile(Stream data)
         {
             byte[] bytes = new byte[data.Length];
             data.Read(bytes, 0, (int)data.Length);
-            offset = _fakeStream.Length;
-            size = data.Length;
             _fakeStream.Write(bytes, 0, bytes.Length);
         }
 
@@ -34,6 +32,11 @@ namespace Zylab.Interview.BinStorage.Tests
             _fakeStream.Read(bytes, 0, (int)size);
             Stream s = new MemoryStream(bytes);
             return s;
+        }
+
+        public long EvaluateOffset()
+        {
+            return _fakeStream.Length;
         }
 
         public void Dispose()

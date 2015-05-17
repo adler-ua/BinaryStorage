@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
-namespace Zylab.Interview.BinStorage
+namespace Zylab.Interview.BinStorage.JsonUtils
 {
-    public static class JsonUtils
+    public static class Utils
     {
         public static string EncodeJsString(string s)
         {

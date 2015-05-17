@@ -57,7 +57,7 @@ namespace Zylab.Interview.BinStorage.Indexing
                         string itemSerialized = JsonConvert.SerializeObject(item, Formatting.Indented);
                         using (StreamWriter sw = new StreamWriter(fileStream))
                         {
-                            sw.Write(",\n{0}: {1} }}", JsonUtils.EncodeJsString(item.Key), itemSerialized);
+                            sw.Write(",\n{0}: {1} }}", JsonUtils.Utils.EncodeJsString(item.Key), itemSerialized);
                         }
                     }
                 }

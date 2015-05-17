@@ -49,6 +49,13 @@ namespace Zylab.Interview.BinStorage.Indexing
         {
             _persistentStorage.Dispose();
         }
+
+        public Index FindByHash(byte[] hash)
+        {
+            return
+                _cache.Values.FirstOrDefault(
+                    v => v.Info != null && v.Info.Hash != null && v.Info.Hash.SequenceEqual(hash));
+        }
     }
 
 }

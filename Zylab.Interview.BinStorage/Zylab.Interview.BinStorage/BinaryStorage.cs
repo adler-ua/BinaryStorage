@@ -47,12 +47,33 @@ namespace Zylab.Interview.BinStorage {
 
             ValidateHash(key, data, parameters);
 
+            if (parameters.Hash == null)
+            {
+                using (MD5 md5 = MD5.Create())
+                {
+                    parameters.Hash = md5.ComputeHash(data);
+                    data.Seek(0, SeekOrigin.Begin);
+                }
+            }
+            Index duplicating = FindDuplicatingData(parameters.Hash);
+            if (duplicating != null)
+            {
+                //Console.WriteLine("Duplicating: " + key);
+                Index index = _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
+                return;
+            }
+
             long offset, size;
             _rwLock.RunWithWriteLock(key, () =>
             {
                 _streamStorage.SaveFile(data, parameters, out offset, out size);
                 Index index = _indexStorage.Add(key, offset, size, parameters);
             });
+        }
+
+        private Index FindDuplicatingData(byte[] hash)
+        {
+            return _indexStorage.FindByHash(hash);
         }
 
         private static void ValidateHash(string key, Stream data, StreamInfo parameters)

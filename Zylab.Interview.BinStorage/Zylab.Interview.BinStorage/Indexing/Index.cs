@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
+using Newtonsoft.Json;
+using Zylab.Interview.BinStorage.JsonUtils;
 
 namespace Zylab.Interview.BinStorage.Indexing
 {
@@ -19,6 +22,7 @@ namespace Zylab.Interview.BinStorage.Indexing
             Key = key;
             Offset = offset;
             Size = size;
+            Info = info;
         }
 
         public string Key { get; set; }

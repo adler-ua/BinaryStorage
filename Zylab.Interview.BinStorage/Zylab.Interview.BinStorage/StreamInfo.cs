@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
+using Newtonsoft.Json;
+using Zylab.Interview.BinStorage.JsonUtils;
 
 namespace Zylab.Interview.BinStorage {
+    
+//    [DataContract]
     public class StreamInfo {
         public static readonly StreamInfo Empty = new StreamInfo();
 
@@ -12,6 +17,7 @@ namespace Zylab.Interview.BinStorage {
         /// specified, but actual hash of the data is different
         /// storage should throw ArgumentException
         /// </summary>
+        [JsonConverter(typeof(ByteArrayJsonConverter))]
         public byte[] Hash { get; set; }
 
         /// <summary>

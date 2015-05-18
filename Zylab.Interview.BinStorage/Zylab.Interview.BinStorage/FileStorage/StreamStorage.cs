@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Converters;
 using SharpMemoryCache;
 
@@ -30,11 +31,13 @@ namespace Zylab.Interview.BinStorage.FileStorage
         public Stream RestoreFile(string key, byte[] hash, long offset, long size)
         {
             string cacheKey = string.Join("", hash);
+            byte[] cachedBytes;
             if (_cache.Contains(cacheKey))
             {
-                Stream cachedStream = (Stream)_cache.Get(cacheKey);
+                cachedBytes = (byte[])_cache.Get(cacheKey);
+                MemoryStream cachedStream = new MemoryStream(cachedBytes);
                 cachedStream.Seek(0, SeekOrigin.Begin);
-                Console.WriteLine("Returning cached for file: " + key);
+                //Console.WriteLine("Returning cached for file: " + key);
                 return cachedStream;
             }
 
@@ -59,8 +62,11 @@ namespace Zylab.Interview.BinStorage.FileStorage
                     }
                 }
             }
-            Console.WriteLine("Caching file: " + key);
-            _cache.Set(cacheKey, destination, new CacheItemPolicy());
+            //Console.WriteLine("Caching file: " + key);
+            cachedBytes = new byte[destination.Length];
+            destination.Read(cachedBytes, 0, (int)destination.Length);
+            destination.Seek(0, SeekOrigin.Begin);
+            _cache.Set(cacheKey, cachedBytes, new CacheItemPolicy());
             return destination;
         }
 

@@ -51,6 +51,7 @@ namespace Zylab.Interview.BinStorage {
             {
                 using (MD5 md5 = MD5.Create())
                 {
+                    parameters = (StreamInfo)parameters.Clone();
                     parameters.Hash = md5.ComputeHash(data);
                     data.Seek(0, SeekOrigin.Begin);
                 }
@@ -96,7 +97,7 @@ namespace Zylab.Interview.BinStorage {
             return _rwLock.RunWithReadLock(key, () =>
             {
                 Index index = _indexStorage.Get(key);
-                return _streamStorage.RestoreFile(key, index.Offset, index.Size);
+                return _streamStorage.RestoreFile(key, index.Info.Hash, index.Offset, index.Size);
             });
         }
 

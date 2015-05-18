@@ -32,6 +32,20 @@ namespace Zylab.Interview.BinStorage {
         /// should throw ArgumentException
         /// </summary>
         public long? Length { get; set; }
-    }
 
+        public object Clone()
+        {
+            var clone = new StreamInfo()
+            {
+                IsCompressed = IsCompressed,
+                Length = Length
+            };
+            if (Hash != null)
+            {
+                clone.Hash = new byte[16];
+                Hash.CopyTo(clone.Hash, 0);
+            }
+            return clone;
+        }
+    }
 }

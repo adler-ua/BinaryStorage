@@ -21,17 +21,20 @@ namespace Zylab.Interview.BinStorage.FileStorage
         public void SaveFile(string key, Stream data, StreamInfo streamInfo, out long offset, out long size)
         {
             _persistentStreamStorage.SaveFile(data, out offset, out size);
-            _cache.Set(key, data, new CacheItemPolicy());
+            //string.Join("", streamInfo.Hash);
+            //_cache.Set(key, data, new CacheItemPolicy());
         }
 
-        public Stream RestoreFile(string key, long offset, long size)
+        public Stream RestoreFile(string key, byte[] hash, long offset, long size)
         {
-            if (_cache.Contains(key))
-            {
-                Stream cachedStream = (Stream)_cache.Get(key);
-                cachedStream.Seek(0, SeekOrigin.Begin);
-                return cachedStream;
-            }
+            //string cacheKey = string.Join("", hash);
+            //if (_cache.Contains(cacheKey))
+            //{
+            //    Stream cachedStream = (Stream)_cache.Get(cacheKey);
+            //    cachedStream.Seek(0, SeekOrigin.Begin);
+            //    Console.WriteLine("Returning cached for file: " + key);
+            //    return cachedStream;
+            //}
             const int BUFFER_SIZE = 4096;
             byte[] buffer = new byte[4096];
 
@@ -53,7 +56,8 @@ namespace Zylab.Interview.BinStorage.FileStorage
                     }
                 }
             }
-            _cache.Set(key, destination, new CacheItemPolicy());
+            //Console.WriteLine("Caching file: " + key);
+            //_cache.Set(cacheKey, destination, new CacheItemPolicy());
             return destination;
         }
 

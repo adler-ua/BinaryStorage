@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Converters;
 using SharpMemoryCache;
 
 namespace Zylab.Interview.BinStorage.FileStorage
@@ -13,7 +8,6 @@ namespace Zylab.Interview.BinStorage.FileStorage
     public class StreamStorage : IDisposable
     {
         private readonly IPersistentStreamStorage _persistentStreamStorage;
-        //private readonly MemoryCache _cache = new MemoryCache("Storage");
         private readonly TrimmingMemoryCache _cache = new TrimmingMemoryCache("Storage");
 
         public StreamStorage(IPersistentStreamStorage persistentStreamStorage)
@@ -24,20 +18,18 @@ namespace Zylab.Interview.BinStorage.FileStorage
         public void SaveFile(string key, Stream data, StreamInfo streamInfo, out long offset, out long size)
         {
             _persistentStreamStorage.SaveFile(data, out offset, out size);
-            //string.Join("", streamInfo.Hash);
-            //_cache.Set(key, data, new CacheItemPolicy());
         }
 
         public Stream RestoreFile(string key, byte[] hash, long offset, long size)
         {
-            string cacheKey = string.Join("", hash);
-            byte[] cachedBytes;
+            if(size==0)
+                return new MemoryStream();
+            
+            string cacheKey = offset.ToString();
             if (_cache.Contains(cacheKey))
             {
-                cachedBytes = (byte[])_cache.Get(cacheKey);
+                var cachedBytes = (byte[])_cache.Get(cacheKey);
                 MemoryStream cachedStream = new MemoryStream(cachedBytes);
-                cachedStream.Seek(0, SeekOrigin.Begin);
-                //Console.WriteLine("Returning cached for file: " + key);
                 return cachedStream;
             }
 
@@ -62,16 +54,21 @@ namespace Zylab.Interview.BinStorage.FileStorage
                     }
                 }
             }
-            //Console.WriteLine("Caching file: " + key);
-            cachedBytes = new byte[destination.Length];
-            destination.Read(cachedBytes, 0, (int)destination.Length);
-            destination.Seek(0, SeekOrigin.Begin);
-            _cache.Set(cacheKey, cachedBytes, new CacheItemPolicy());
+            CacheData(destination, cacheKey);
             return destination;
+        }
+
+        private void CacheData(Stream stream, string cacheKey)
+        {
+            var cachedBytes = new byte[stream.Length];
+            stream.Read(cachedBytes, 0, (int) stream.Length);
+            stream.Seek(0, SeekOrigin.Begin);
+            _cache.Set(cacheKey, cachedBytes, new CacheItemPolicy());
         }
 
         public void Dispose()
         {
+            _cache.Dispose();
             _persistentStreamStorage.Dispose();
         }
     }

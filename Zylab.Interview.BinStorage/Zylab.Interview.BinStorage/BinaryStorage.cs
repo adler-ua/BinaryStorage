@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 using Newtonsoft.Json.Converters;
@@ -49,18 +50,24 @@ namespace Zylab.Interview.BinStorage {
 
             if (parameters.Hash == null)
             {
+                parameters = (StreamInfo)parameters.Clone();
                 using (MD5 md5 = MD5.Create())
                 {
-                    parameters = (StreamInfo)parameters.Clone();
                     parameters.Hash = md5.ComputeHash(data);
                     data.Seek(0, SeekOrigin.Begin);
                 }
             }
-            Index duplicating = FindDuplicatingData(parameters.Hash);
+            if (!parameters.Length.HasValue)
+            {
+                parameters.Length = data.Length;
+            }
+
+            // TODO: compressing here
+
+            Index duplicating = FindDuplicatingData(parameters.Hash, parameters.Length.Value);
             if (duplicating != null)
             {
-                //Console.WriteLine("Duplicating: " + key);
-                Index index = _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
+                _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
                 return;
             }
 
@@ -68,13 +75,14 @@ namespace Zylab.Interview.BinStorage {
             _rwLock.RunWithWriteLock(key, () =>
             {
                 _streamStorage.SaveFile(key, data, parameters, out offset, out size);
-                Index index = _indexStorage.Add(key, offset, size, parameters);
+                _indexStorage.Add(key, offset, size, parameters);
             });
         }
 
-        private Index FindDuplicatingData(byte[] hash)
+        private Index FindDuplicatingData(byte[] hash, long length)
         {
-            return _indexStorage.FindByHash(hash);
+            if (length == 0) return null;
+            return _indexStorage.FindByHash(hash, length);
         }
 
         private static void ValidateHash(string key, Stream data, StreamInfo parameters)

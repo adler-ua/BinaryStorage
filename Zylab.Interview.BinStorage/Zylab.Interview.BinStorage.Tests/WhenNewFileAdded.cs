@@ -39,7 +39,7 @@ namespace Zylab.Interview.BinStorage.Tests
             BinaryStorage.Add("fakekey", new MemoryStream(Bytes), new StreamInfo());
             // ------------------------------------------------------------
             
-            Bytes = new byte[1024];
+            Bytes = new byte[9216];
             random.NextBytes(Bytes);
             TestStream = new MemoryStream(Bytes);
             
@@ -99,7 +99,7 @@ namespace Zylab.Interview.BinStorage.Tests
         public void IndexHasCorrectSize()
         {
             var index = PersistentIndexStorage.Restore()[TestKey];
-            Assert.AreEqual(1024, index.Size);
+            Assert.AreEqual(9216, index.Size);
         }
     
         [ClassCleanup]

@@ -5,13 +5,15 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
 using Newtonsoft.Json.Converters;
+using SharpMemoryCache;
 
 namespace Zylab.Interview.BinStorage.FileStorage
 {
     public class StreamStorage : IDisposable
     {
         private readonly IPersistentStreamStorage _persistentStreamStorage;
-        private readonly MemoryCache _cache = new MemoryCache("Storage");
+        //private readonly MemoryCache _cache = new MemoryCache("Storage");
+        private readonly TrimmingMemoryCache _cache = new TrimmingMemoryCache("Storage");
 
         public StreamStorage(IPersistentStreamStorage persistentStreamStorage)
         {
@@ -27,14 +29,15 @@ namespace Zylab.Interview.BinStorage.FileStorage
 
         public Stream RestoreFile(string key, byte[] hash, long offset, long size)
         {
-            //string cacheKey = string.Join("", hash);
-            //if (_cache.Contains(cacheKey))
-            //{
-            //    Stream cachedStream = (Stream)_cache.Get(cacheKey);
-            //    cachedStream.Seek(0, SeekOrigin.Begin);
-            //    Console.WriteLine("Returning cached for file: " + key);
-            //    return cachedStream;
-            //}
+            string cacheKey = string.Join("", hash);
+            if (_cache.Contains(cacheKey))
+            {
+                Stream cachedStream = (Stream)_cache.Get(cacheKey);
+                cachedStream.Seek(0, SeekOrigin.Begin);
+                Console.WriteLine("Returning cached for file: " + key);
+                return cachedStream;
+            }
+
             const int BUFFER_SIZE = 4096;
             byte[] buffer = new byte[4096];
 
@@ -56,8 +59,8 @@ namespace Zylab.Interview.BinStorage.FileStorage
                     }
                 }
             }
-            //Console.WriteLine("Caching file: " + key);
-            //_cache.Set(cacheKey, destination, new CacheItemPolicy());
+            Console.WriteLine("Caching file: " + key);
+            _cache.Set(cacheKey, destination, new CacheItemPolicy());
             return destination;
         }
 

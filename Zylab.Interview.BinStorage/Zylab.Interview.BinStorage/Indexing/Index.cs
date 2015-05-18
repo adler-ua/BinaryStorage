@@ -31,6 +31,7 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public long Size { get; set; }
 
+        [DataMember]
         public StreamInfo Info { get; set; }
     }
 }

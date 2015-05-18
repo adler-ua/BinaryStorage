@@ -62,9 +62,24 @@ namespace Zylab.Interview.BinStorage {
                 parameters.Length = data.Length;
             }
 
-            // TODO: compressing here
+            Stream compressedStream = null;
+            if (!parameters.IsCompressed)
+            {
+                if (_configuration.CompressionThreshold > 0 && parameters.Length > _configuration.CompressionThreshold)
+                {
+                    compressedStream = Compressing.Compress(data);
+                    compressedStream.Seek(0, SeekOrigin.Begin);
+                    parameters.DecompressOnRestore = true;
+                    parameters.Length = compressedStream.Length;
+                    using (MD5 md5 = MD5.Create())
+                    {
+                        parameters.CompressionHash = md5.ComputeHash(compressedStream);
+                        compressedStream.Seek(0, SeekOrigin.Begin);
+                    }
+                }
+            }
 
-            Index duplicating = FindDuplicatingData(parameters.Hash, parameters.Length.Value);
+            Index duplicating = FindDuplicatingData(parameters);
             if (duplicating != null)
             {
                 _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
@@ -74,15 +89,21 @@ namespace Zylab.Interview.BinStorage {
             long offset, size;
             _rwLock.RunWithWriteLock(key, () =>
             {
-                _streamStorage.SaveFile(key, data, parameters, out offset, out size);
+                Stream streamToSave = data;
+                if (compressedStream != null)
+                {
+                    streamToSave = compressedStream;
+                }
+                _streamStorage.SaveFile(key, streamToSave, parameters, out offset, out size);
                 _indexStorage.Add(key, offset, size, parameters);
             });
         }
 
-        private Index FindDuplicatingData(byte[] hash, long length)
+        private Index FindDuplicatingData(StreamInfo info)
         {
+            long length = info.Length.Value;
             if (length == 0) return null;
-            return _indexStorage.FindByHash(hash, length);
+            return _indexStorage.FindByHash(info);
         }
 
         private static void ValidateHash(string key, Stream data, StreamInfo parameters)
@@ -102,11 +123,18 @@ namespace Zylab.Interview.BinStorage {
 
         public Stream Get(string key)
         {
-            return _rwLock.RunWithReadLock(key, () =>
+            KeyValuePair<Index, Stream> index_stream = _rwLock.RunWithReadLock(key, () =>
             {
                 Index index = _indexStorage.Get(key);
-                return _streamStorage.RestoreFile(key, index.Info.Hash, index.Offset, index.Size);
+                return new KeyValuePair<Index, Stream>(index,_streamStorage.RestoreFile(key, index.Info.Hash, index.Offset, index.Size));
             });
+            if (index_stream.Key.Info.DecompressOnRestore == true)
+            {
+                var decompressed = Compressing.Decompress(index_stream.Value);
+                decompressed.Seek(0, SeekOrigin.Begin);
+                return decompressed;
+            }
+            return index_stream.Value;
         }
 
         public bool Contains(string key)

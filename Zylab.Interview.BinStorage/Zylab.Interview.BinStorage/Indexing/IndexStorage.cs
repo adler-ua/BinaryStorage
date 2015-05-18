@@ -50,13 +50,22 @@ namespace Zylab.Interview.BinStorage.Indexing
             _persistentStorage.Dispose();
         }
 
-        public Index FindByHash(byte[] hash, long length)
+        public Index FindByHash(StreamInfo info)
         {
+            if (info.CompressionHash != null)
+            {
+                return
+                    _cache.Values.FirstOrDefault(
+                        v => v.Info != null
+                             && v.Info.Length == info.Length
+                             && v.Info.CompressionHash != null &&
+                             v.Info.CompressionHash.SequenceEqual(info.CompressionHash));
+            }
             return
                 _cache.Values.FirstOrDefault(
-                    v => v.Info != null 
-                        && v.Info.Length == length
-                        && v.Info.Hash != null && v.Info.Hash.SequenceEqual(hash));
+                    v => v.Info != null
+                         && v.Info.Length == info.Length
+                         && v.Info.Hash != null && v.Info.Hash.SequenceEqual(info.Hash));
         }
     }
 

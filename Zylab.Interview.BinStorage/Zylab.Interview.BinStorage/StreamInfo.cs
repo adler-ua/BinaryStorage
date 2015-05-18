@@ -8,9 +8,13 @@ using Zylab.Interview.BinStorage.JsonUtils;
 
 namespace Zylab.Interview.BinStorage {
     
-//    [DataContract]
     public class StreamInfo {
         public static readonly StreamInfo Empty = new StreamInfo();
+
+        public StreamInfo()
+        {
+            CompressionHash = new byte[0];
+        }
 
         /// <summary>
         /// MD5 hash of the stream. Could be null. If value is
@@ -19,6 +23,21 @@ namespace Zylab.Interview.BinStorage {
         /// </summary>
         [JsonConverter(typeof(ByteArrayJsonConverter))]
         public byte[] Hash { get; set; }
+
+        /// <summary>
+        /// MD5 hash of the compressed stream. Could be null. If value is
+        /// specified, but actual hash of the data is different
+        /// storage should throw ArgumentException
+        /// </summary>
+        [JsonConverter(typeof(ByteArrayJsonConverter))]
+        public byte[] CompressionHash { get; set; }
+
+        /// <summary>
+        /// Indicates if needs to be decompressed after restore
+        /// before return for consuming.
+        /// Default is false.
+        /// </summary>
+        public bool DecompressOnRestore { get; set; }
 
         /// <summary>
         /// True if stream is compressed. Default false
@@ -38,12 +57,19 @@ namespace Zylab.Interview.BinStorage {
             var clone = new StreamInfo()
             {
                 IsCompressed = IsCompressed,
-                Length = Length
+                Length = Length,
+                DecompressOnRestore = DecompressOnRestore
             };
             if (Hash != null)
             {
                 clone.Hash = new byte[16];
                 Hash.CopyTo(clone.Hash, 0);
+            }
+
+            if (CompressionHash != null)
+            {
+                clone.CompressionHash = new byte[16];
+                CompressionHash.CopyTo(clone.CompressionHash, 0);
             }
             return clone;
         }

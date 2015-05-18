@@ -73,7 +73,7 @@ namespace Zylab.Interview.BinStorage.Indexing
             using (StreamReader sr = File.OpenText(_path))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                var indices = (ConcurrentDictionary<string, Index>)serializer.Deserialize(sr, typeof (ConcurrentDictionary<string, Index>));
+                var indices = (ConcurrentDictionary<string, Index>)serializer.Deserialize(sr, typeof(ConcurrentDictionary<string, Index>));
                 return indices;
             }
         }

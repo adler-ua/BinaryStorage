@@ -41,7 +41,6 @@ namespace Zylab.Interview.BinStorage.Tests
             // ------------------------------------------------------------
             
 
-            // write first 128 bytes before new file to test non-zero index
             Data1 = new byte[1024];
             random.NextBytes(Data1);
             TestStream1 = new MemoryStream(Data1);
@@ -49,7 +48,6 @@ namespace Zylab.Interview.BinStorage.Tests
             {
                 BinaryStorage.Add(TestKey1, TestStream1, new StreamInfo() {Hash = md5.ComputeHash(Data1)});
             }
-            // ------------------------------------------------------------
 
             Data2 = new byte[1024];
             Data1.CopyTo(Data2, 0);

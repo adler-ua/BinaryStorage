@@ -33,37 +33,24 @@ namespace Zylab.Interview.BinStorage.FileStorage
                 return cachedStream;
             }
 
-            const int BUFFER_SIZE = 4096;
-            byte[] buffer = new byte[4096];
-
+            
             Stream destination = new MemoryStream();
+            byte[] buffer;
             using (Stream source = _persistentStreamStorage.OpenReadStorageStream())
             {
                 source.Seek(offset, SeekOrigin.Begin);
-                int bytesToRead = (int)Math.Min(BUFFER_SIZE, size);
-                int bytesRead;
-                while ((bytesRead = source.Read(buffer, 0, bytesToRead)) > 0)
-                {
-                    destination.Write(buffer, 0, bytesRead);
-                    size -= bytesRead;
-                    bytesToRead = (int)Math.Min(BUFFER_SIZE, size);
-                    if (bytesToRead <= 0)
-                    {
-                        destination.Seek(0, SeekOrigin.Begin);
-                        break;
-                    }
-                }
+                buffer = new byte[size];
+                source.Read(buffer, 0, (int)size);
+                destination.Write(buffer, 0, (int)size);
+                destination.Seek(0, SeekOrigin.Begin);
             }
-            CacheData(destination, cacheKey);
+            CacheData(buffer, cacheKey);
             return destination;
         }
 
-        private void CacheData(Stream stream, string cacheKey)
+        private void CacheData(byte[] data, string cacheKey)
         {
-            var cachedBytes = new byte[stream.Length];
-            stream.Read(cachedBytes, 0, (int) stream.Length);
-            stream.Seek(0, SeekOrigin.Begin);
-            _cache.Set(cacheKey, cachedBytes, new CacheItemPolicy());
+            _cache.Set(cacheKey, data, new CacheItemPolicy());
         }
 
         public void Dispose()

@@ -126,9 +126,9 @@ namespace Zylab.Interview.BinStorage {
             KeyValuePair<Index, Stream> index_stream = _rwLock.RunWithReadLock(key, () =>
             {
                 Index index = _indexStorage.Get(key);
-                return new KeyValuePair<Index, Stream>(index,_streamStorage.RestoreFile(key, index.Info.Hash, index.Offset, index.Size));
+                return new KeyValuePair<Index, Stream>(index,_streamStorage.RestoreFile(key, index.Hash, index.Offset, index.Size));
             });
-            if (index_stream.Key.Info.DecompressOnRestore == true)
+            if (index_stream.Key.DecompressOnRestore == true)
             {
                 var decompressed = Compressing.Decompress(index_stream.Value);
                 decompressed.Seek(0, SeekOrigin.Begin);

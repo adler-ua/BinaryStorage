@@ -24,10 +24,10 @@ namespace Zylab.Interview.BinStorage.TestApp
 			// Create storage and add data
 			Console.WriteLine("Creating storage from " + args[0]);
 			Stopwatch sw = Stopwatch.StartNew();
-			using (var storage = new BinaryStorage(new StorageConfiguration() { WorkingFolder = args[1],CompressionThreshold = 2048}))
+			using (var storage = new BinaryStorage(new StorageConfiguration() { WorkingFolder = args[1]}))
 			{
 				Directory.EnumerateFiles(args[0], "*", SearchOption.AllDirectories)
-					.AsParallel().WithDegreeOfParallelism(1).ForAll(s =>
+					.AsParallel().WithDegreeOfParallelism(4).ForAll(s =>
 					{
 						AddFile(storage, s);
 					});
@@ -41,7 +41,7 @@ namespace Zylab.Interview.BinStorage.TestApp
 			using (var storage = new BinaryStorage(new StorageConfiguration() { WorkingFolder = args[1] }))
 			{
 				Directory.EnumerateFiles(args[0], "*", SearchOption.AllDirectories)
-					.AsParallel().WithDegreeOfParallelism(1).ForAll(s =>
+					.AsParallel().WithDegreeOfParallelism(4).ForAll(s =>
 					{
 						using (var resultStream = storage.Get(s)) {
 							using (var sourceStream = new FileStream(s, FileMode.Open, FileAccess.Read)) {

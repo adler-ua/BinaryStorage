@@ -73,5 +73,28 @@ namespace Zylab.Interview.BinStorage {
             }
             return clone;
         }
+
+        public override bool Equals(object obj)
+        {
+            StreamInfo otherObj = (StreamInfo) obj;
+            if (this.Hash != null && otherObj.Hash != null)
+            {
+                return this.Hash.SequenceEqual(otherObj.Hash);
+            }
+            if (this.CompressionHash != null && otherObj.CompressionHash != null)
+            {
+                return this.CompressionHash.SequenceEqual(otherObj.CompressionHash);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            if (this.Hash != null && this.Hash.Length == 16)
+            {
+                return this.Hash.GetHashCode();
+            }
+            return this.CompressionHash.GetHashCode();
+        }
     }
 }

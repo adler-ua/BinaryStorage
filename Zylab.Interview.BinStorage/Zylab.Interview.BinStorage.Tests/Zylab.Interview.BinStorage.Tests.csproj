@@ -51,6 +51,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="FakePersistentStreamStorage.cs" />
+    <Compile Include="WhenAddingEqualFilesToCompress.cs" />
     <Compile Include="WhenAddingDataToCompress.cs" />
     <Compile Include="WhenAddingDuplicateBinaryData.cs" />
     <Compile Include="WhenAttemptToUseWrongKeyToGet.cs" />

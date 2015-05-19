@@ -62,6 +62,16 @@ namespace Zylab.Interview.BinStorage {
                 parameters.Length = data.Length;
             }
 
+            Index duplicating = FindDuplicatingData(parameters);
+            if (duplicating != null)
+            {
+                parameters.DecompressOnRestore = duplicating.DecompressOnRestore;
+                if(duplicating.CompressionHash!=null)
+                    parameters.CompressionHash = duplicating.CompressionHash.ToArray();
+                _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
+                return;
+            }
+
             Stream compressedStream = null;
             if (!parameters.IsCompressed)
             {
@@ -79,12 +89,12 @@ namespace Zylab.Interview.BinStorage {
                 }
             }
 
-            Index duplicating = FindDuplicatingData(parameters);
-            if (duplicating != null)
-            {
-                _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
-                return;
-            }
+            //Index duplicating = FindDuplicatingData(parameters);
+            //if (duplicating != null)
+            //{
+            //    _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
+            //    return;
+            //}
 
             long offset, size;
             _rwLock.RunWithWriteLock(key, () =>

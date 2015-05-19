@@ -24,6 +24,7 @@ namespace Zylab.Interview.BinStorage {
             
             _indexStorage = new IndexStorage(persistentIndexStorage);
             _streamStorage = new StreamStorage(persistentStreamStorage);
+            _compressor = new Compressor();
         }
 
         public BinaryStorage(StorageConfiguration configuration, IndexStorage indexStorage, StreamStorage streamStorage, ICompressor compressor)

@@ -62,13 +62,13 @@ namespace Zylab.Interview.BinStorage {
             };
             if (Hash != null)
             {
-                clone.Hash = new byte[16];
+                clone.Hash = new byte[Hash.Length];
                 Hash.CopyTo(clone.Hash, 0);
             }
 
             if (CompressionHash != null)
             {
-                clone.CompressionHash = new byte[16];
+                clone.CompressionHash = new byte[CompressionHash.Length];
                 CompressionHash.CopyTo(clone.CompressionHash, 0);
             }
             return clone;

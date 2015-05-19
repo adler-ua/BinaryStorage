@@ -52,22 +52,19 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public Index FindByHash(StreamInfo info)
         {
-            if (info.CompressionHash != null && info.CompressionHash.Length == 16 && !info.CompressionHash.All(bit=>bit == 0))
+            if (info.CompressionHash != null && info.CompressionHash.Length == 16)// && !info.CompressionHash.All(bit=>bit == 0))
             {
                 return
                     _cache.Values.FirstOrDefault(
-                        v => //v.Info != null
-                             //&& 
-                                v.Length == info.Length
-                             && v.CompressionHash != null &&
-                             v.CompressionHash.SequenceEqual(info.CompressionHash));
+                        v => v.Length == info.Length
+                             && v.CompressionHash != null 
+                             && v.CompressionHash.SequenceEqual(info.CompressionHash));
             }
             return
                 _cache.Values.FirstOrDefault(
-                    v => //v.Info != null
-                         // && 
-                         v.Length == info.Length
-                         && v.Hash != null && v.Hash.SequenceEqual(info.Hash));
+                    v => v.Length == info.Length
+                         && v.Hash != null
+                         && v.Hash.SequenceEqual(info.Hash));
         }
     }
 

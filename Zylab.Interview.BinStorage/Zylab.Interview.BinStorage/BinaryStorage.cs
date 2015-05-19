@@ -48,9 +48,35 @@ namespace Zylab.Interview.BinStorage {
 
             ValidateHash(key, data, parameters);
 
+            parameters = FulfillParameters(data, parameters);
+
+            Index duplicating = FindDuplicatingData(parameters);
+            if (duplicating != null)
+            {
+                PutReferenceToExistingData(key, parameters, duplicating);
+                return;
+            }
+
+            Stream compressedStream = CompressIfRequired(data, parameters);
+
+            long offset, size;
+            _rwLock.RunWithWriteLock(key, () =>
+            {
+                Stream streamToSave = data;
+                if (compressedStream != null)
+                {
+                    streamToSave = compressedStream;
+                }
+                _streamStorage.SaveFile(key, streamToSave, parameters, out offset, out size);
+                _indexStorage.Add(key, offset, size, parameters);
+            });
+        }
+
+        private static StreamInfo FulfillParameters(Stream data, StreamInfo parameters)
+        {
             if (parameters.Hash == null)
             {
-                parameters = (StreamInfo)parameters.Clone();
+                parameters = (StreamInfo) parameters.Clone();
                 using (MD5 md5 = MD5.Create())
                 {
                     parameters.Hash = md5.ComputeHash(data);
@@ -61,17 +87,11 @@ namespace Zylab.Interview.BinStorage {
             {
                 parameters.Length = data.Length;
             }
+            return parameters;
+        }
 
-            Index duplicating = FindDuplicatingData(parameters);
-            if (duplicating != null)
-            {
-                parameters.DecompressOnRestore = duplicating.DecompressOnRestore;
-                if(duplicating.CompressionHash!=null)
-                    parameters.CompressionHash = duplicating.CompressionHash.ToArray();
-                _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
-                return;
-            }
-
+        private Stream CompressIfRequired(Stream data, StreamInfo parameters)
+        {
             Stream compressedStream = null;
             if (!parameters.IsCompressed)
             {
@@ -88,25 +108,15 @@ namespace Zylab.Interview.BinStorage {
                     }
                 }
             }
+            return compressedStream;
+        }
 
-            //Index duplicating = FindDuplicatingData(parameters);
-            //if (duplicating != null)
-            //{
-            //    _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
-            //    return;
-            //}
-
-            long offset, size;
-            _rwLock.RunWithWriteLock(key, () =>
-            {
-                Stream streamToSave = data;
-                if (compressedStream != null)
-                {
-                    streamToSave = compressedStream;
-                }
-                _streamStorage.SaveFile(key, streamToSave, parameters, out offset, out size);
-                _indexStorage.Add(key, offset, size, parameters);
-            });
+        private void PutReferenceToExistingData(string key, StreamInfo parameters, Index duplicating)
+        {
+            parameters.DecompressOnRestore = duplicating.DecompressOnRestore;
+            if (duplicating.CompressionHash != null)
+                parameters.CompressionHash = duplicating.CompressionHash.ToArray();
+            _indexStorage.Add(key, duplicating.Offset, duplicating.Size, parameters);
         }
 
         private Index FindDuplicatingData(StreamInfo info)

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
+using Zylab.Interview.BinStorage.JsonUtils;
 
 namespace Zylab.Interview.BinStorage.Indexing
 {
@@ -12,6 +10,9 @@ namespace Zylab.Interview.BinStorage.Indexing
     {
         private readonly string _path;
         private const string IndexFileName = "index.json";
+        /// <summary>
+        /// Controls exclusive access to index.json file.
+        /// </summary>
         private readonly object _locker = new object();
 
         public FileIndexStorage(string directory)
@@ -57,7 +58,7 @@ namespace Zylab.Interview.BinStorage.Indexing
                         string itemSerialized = JsonConvert.SerializeObject(item, Formatting.Indented);
                         using (StreamWriter sw = new StreamWriter(fileStream))
                         {
-                            sw.Write(",\n{0}: {1} }}", JsonUtils.Utils.EncodeJsString(item.Key), itemSerialized);
+                            sw.Write(",\n{0}: {1} }}", Utils.EncodeJsString(item.Key), itemSerialized);
                         }
                     }
                 }
@@ -66,15 +67,20 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public ConcurrentDictionary<string, Index> Restore()
         {
-            if (!File.Exists(_path))
+            lock (_locker)
             {
-                return new ConcurrentDictionary<string, Index>();
-            }
-            using (StreamReader sr = File.OpenText(_path))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                var indices = (ConcurrentDictionary<string, Index>)serializer.Deserialize(sr, typeof(ConcurrentDictionary<string, Index>));
-                return indices;
+                if (!File.Exists(_path))
+                {
+                    return new ConcurrentDictionary<string, Index>();
+                }
+                using (StreamReader sr = File.OpenText(_path))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    var indices =
+                        (ConcurrentDictionary<string, Index>)
+                            serializer.Deserialize(sr, typeof (ConcurrentDictionary<string, Index>));
+                    return indices;
+                }
             }
         }
 

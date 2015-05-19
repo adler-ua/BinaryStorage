@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 
 namespace Zylab.Interview.BinStorage.Indexing
 {
     public class IndexStorage
     {
-        private ConcurrentDictionary<string, Index> _cache;
-        private IPersistentIndexStorage _persistentStorage;
+        private readonly ConcurrentDictionary<string, Index> _cache;
+        private readonly IPersistentIndexStorage _persistentStorage;
 
         public IndexStorage(IPersistentIndexStorage persistentStorage)
         {
@@ -24,11 +20,6 @@ namespace Zylab.Interview.BinStorage.Indexing
             _cache[key] = index;
             _persistentStorage.Save(index);
             return index;
-        }
-
-        public void Remove(string key)
-        {
-            throw new NotImplementedException();
         }
 
         public Index Get(string key)
@@ -52,7 +43,7 @@ namespace Zylab.Interview.BinStorage.Indexing
 
         public Index FindByHash(StreamInfo info)
         {
-            if (info.CompressionHash != null && info.CompressionHash.Length == 16)// && !info.CompressionHash.All(bit=>bit == 0))
+            if (info.CompressionHash != null && info.CompressionHash.Length == 16)
             {
                 return
                     _cache.Values.FirstOrDefault(

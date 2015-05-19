@@ -1,10 +1,9 @@
 ﻿using System.IO;
 using System.IO.Compression;
-using System.Security.Cryptography;
 
-namespace Zylab.Interview.BinStorage
+namespace Zylab.Interview.BinStorage.Compressing
 {
-    public static class Compressing
+    public static class GZipCompressor
     {
         public static Stream Compress(Stream source)
         {
@@ -30,6 +29,5 @@ namespace Zylab.Interview.BinStorage
         	
             return outStream;
         }
-
     }
 }

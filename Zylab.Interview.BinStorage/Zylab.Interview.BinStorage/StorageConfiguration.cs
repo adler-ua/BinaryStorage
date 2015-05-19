@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Zylab.Interview.BinStorage {
+﻿namespace Zylab.Interview.BinStorage {
     public class StorageConfiguration {
         /// <summary>
         /// Maximum size in bytes of the storage file

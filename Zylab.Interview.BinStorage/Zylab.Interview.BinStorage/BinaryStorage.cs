@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Security.Cryptography;
-using System.Threading;
-using Newtonsoft.Json.Converters;
+using Zylab.Interview.BinStorage.Compressing;
 using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
 
@@ -16,6 +12,7 @@ namespace Zylab.Interview.BinStorage {
         private readonly StorageConfiguration _configuration;
         private readonly IndexStorage _indexStorage;
         private readonly StreamStorage _streamStorage;
+        private readonly ICompressor _compressor;
         private readonly NamedReaderWriterLock _rwLock = new NamedReaderWriterLock();
         
         public BinaryStorage(StorageConfiguration configuration)
@@ -29,12 +26,15 @@ namespace Zylab.Interview.BinStorage {
             _streamStorage = new StreamStorage(persistentStreamStorage);
         }
 
-        public BinaryStorage(StorageConfiguration configuration, IndexStorage indexStorage, StreamStorage streamStorage)
+        public BinaryStorage(StorageConfiguration configuration, IndexStorage indexStorage, StreamStorage streamStorage, ICompressor compressor)
         {
             _configuration = configuration;
             _indexStorage = indexStorage;
             _streamStorage = streamStorage;
+            _compressor = compressor;
         }
+
+        #region IBinaryStorage methods
 
         public void Add(string key, Stream data, StreamInfo parameters)
         {
@@ -57,7 +57,7 @@ namespace Zylab.Interview.BinStorage {
                 return;
             }
 
-            Stream compressedStream = CompressIfRequired(data, parameters);
+            Stream compressedStream = _compressor.CompressIfRequired(data, parameters, _configuration.CompressionThreshold);
 
             long offset, size;
             _rwLock.RunWithWriteLock(key, () =>
@@ -71,6 +71,29 @@ namespace Zylab.Interview.BinStorage {
                 _indexStorage.Add(key, offset, size, parameters);
             });
         }
+
+        public Stream Get(string key)
+        {
+            KeyValuePair<Index, Stream> index_stream = _rwLock.RunWithReadLock(key, () =>
+            {
+                Index index = _indexStorage.Get(key);
+                return new KeyValuePair<Index, Stream>(index, _streamStorage.RestoreFile(key, index.Hash, index.Offset, index.Size));
+            });
+            if (index_stream.Key.DecompressOnRestore)
+            {
+                var decompressed = GZipCompressor.Decompress(index_stream.Value);
+                decompressed.Seek(0, SeekOrigin.Begin);
+                return decompressed;
+            }
+            return index_stream.Value;
+        }
+
+        public bool Contains(string key)
+        {
+            return _rwLock.RunWithReadLock(key, () => _indexStorage.ContainsKey(key));
+        }
+
+        #endregion
 
         private static StreamInfo FulfillParameters(Stream data, StreamInfo parameters)
         {
@@ -90,27 +113,6 @@ namespace Zylab.Interview.BinStorage {
             return parameters;
         }
 
-        private Stream CompressIfRequired(Stream data, StreamInfo parameters)
-        {
-            Stream compressedStream = null;
-            if (!parameters.IsCompressed)
-            {
-                if (_configuration.CompressionThreshold > 0 && parameters.Length > _configuration.CompressionThreshold)
-                {
-                    compressedStream = Compressing.Compress(data);
-                    compressedStream.Seek(0, SeekOrigin.Begin);
-                    parameters.DecompressOnRestore = true;
-                    parameters.Length = compressedStream.Length;
-                    using (MD5 md5 = MD5.Create())
-                    {
-                        parameters.CompressionHash = md5.ComputeHash(compressedStream);
-                        compressedStream.Seek(0, SeekOrigin.Begin);
-                    }
-                }
-            }
-            return compressedStream;
-        }
-
         private void PutReferenceToExistingData(string key, StreamInfo parameters, Index duplicating)
         {
             parameters.DecompressOnRestore = duplicating.DecompressOnRestore;
@@ -121,8 +123,7 @@ namespace Zylab.Interview.BinStorage {
 
         private Index FindDuplicatingData(StreamInfo info)
         {
-            long length = info.Length.Value;
-            if (length == 0) return null;
+            if (!info.Length.HasValue || info.Length.Value == 0) return null;
             return _indexStorage.FindByHash(info);
         }
 
@@ -139,27 +140,6 @@ namespace Zylab.Interview.BinStorage {
                 }
                 data.Seek(0, SeekOrigin.Begin);
             }
-        }
-
-        public Stream Get(string key)
-        {
-            KeyValuePair<Index, Stream> index_stream = _rwLock.RunWithReadLock(key, () =>
-            {
-                Index index = _indexStorage.Get(key);
-                return new KeyValuePair<Index, Stream>(index,_streamStorage.RestoreFile(key, index.Hash, index.Offset, index.Size));
-            });
-            if (index_stream.Key.DecompressOnRestore == true)
-            {
-                var decompressed = Compressing.Decompress(index_stream.Value);
-                decompressed.Seek(0, SeekOrigin.Begin);
-                return decompressed;
-            }
-            return index_stream.Value;
-        }
-
-        public bool Contains(string key)
-        {
-            return _rwLock.RunWithReadLock(key, () => _indexStorage.ContainsKey(key));
         }
 
         public void Dispose()

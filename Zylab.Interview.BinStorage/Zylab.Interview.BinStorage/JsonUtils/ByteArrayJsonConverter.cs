@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 
 namespace Zylab.Interview.BinStorage.JsonUtils
 {
     public class ByteArrayJsonConverter : JsonConverter
     {
-        public override void WriteJson(
-            JsonWriter writer,
-            object value,
-            JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
             {
@@ -32,11 +27,7 @@ namespace Zylab.Interview.BinStorage.JsonUtils
             writer.WriteEndArray();
         }
 
-        public override object ReadJson(
-            JsonReader reader,
-            Type objectType,
-            object existingValue,
-            JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.StartArray)
             {
@@ -64,14 +55,11 @@ namespace Zylab.Interview.BinStorage.JsonUtils
 
                 throw new Exception("Unexpected end when reading bytes.");
             }
-            else
-            {
-                throw new Exception(
-                    string.Format(
-                        "Unexpected token parsing binary. "
-                        + "Expected StartArray, got {0}.",
-                        reader.TokenType));
-            }
+            throw new Exception(
+                string.Format(
+                    "Unexpected token parsing binary. "
+                    + "Expected StartArray, got {0}.",
+                    reader.TokenType));
         }
 
         public override bool CanConvert(Type objectType)

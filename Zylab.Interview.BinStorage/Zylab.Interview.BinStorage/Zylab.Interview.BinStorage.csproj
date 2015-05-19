@@ -71,7 +71,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BinaryStorage.cs" />
-    <Compile Include="Compressing.cs" />
+    <Compile Include="Compressing\GZipUtils.cs" />
+    <Compile Include="Compressing\ICompressor.cs" />
+    <Compile Include="Compressing\Compressor.cs" />
     <Compile Include="FileStorage\FileStreamStorage.cs" />
     <Compile Include="FileStorage\IncorrectHashException.cs" />
     <Compile Include="FileStorage\IPersistentStreamStorage.cs" />

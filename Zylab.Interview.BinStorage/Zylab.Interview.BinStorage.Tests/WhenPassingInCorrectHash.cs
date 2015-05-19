@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Zylab.Interview.BinStorage.Compressing;
 using Zylab.Interview.BinStorage.FileStorage;
 using Zylab.Interview.BinStorage.Indexing;
 
@@ -29,7 +30,7 @@ namespace Zylab.Interview.BinStorage.Tests
             IndexStorage = new IndexStorage(PersistentIndexStorage);
             PersistentStreamStorage = new FakePersistentStreamStorage();
             StreamStorage = new StreamStorage(PersistentStreamStorage);
-            BinaryStorage = new BinaryStorage(new StorageConfiguration(), IndexStorage, StreamStorage);
+            BinaryStorage = new BinaryStorage(new StorageConfiguration(), IndexStorage, StreamStorage, new Compressor());
 
             Random random = new Random();
             Bytes = new byte[1024];

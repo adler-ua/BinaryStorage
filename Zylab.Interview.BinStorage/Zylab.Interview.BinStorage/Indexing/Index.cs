@@ -12,7 +12,6 @@ namespace Zylab.Interview.BinStorage.Indexing
     {
         public Index()
         {
-            //Info = StreamInfo.Empty;
         }
 
         public Index(string key, long offset, long size, StreamInfo info)
@@ -22,12 +21,11 @@ namespace Zylab.Interview.BinStorage.Indexing
             Key = key;
             Offset = offset;
             Size = size;
-            //Info = info;
-            this.Length = info.Length;
-            this.IsCompressed = info.IsCompressed;
-            this.DecompressOnRestore = info.DecompressOnRestore;
-            this.CompressionHash = info.CompressionHash;
-            this.Hash = info.Hash;
+            Length = info.Length;
+            IsCompressed = info.IsCompressed;
+            DecompressOnRestore = info.DecompressOnRestore;
+            CompressionHash = info.CompressionHash;
+            Hash = info.Hash;
         }
 
         public string Key { get; set; }
@@ -71,22 +69,5 @@ namespace Zylab.Interview.BinStorage.Indexing
         /// should throw ArgumentException
         /// </summary>
         public long? Length { get; set; }
-
-        //[DataMember]
-        //public StreamInfo Info { get; set; }
-
-        public override int GetHashCode()
-        {
-            return this.Key.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (this.GetType() != obj.GetType())
-            {
-                return false;
-            }
-            return this.Key == ((Index) obj).Key;
-        }
     }
 }
